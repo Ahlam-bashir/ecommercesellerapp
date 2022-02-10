@@ -1,0 +1,13 @@
+export const NAVIGATION_TO_SPLASH_SCREEN = 'SplashScreen';
+export const NAVIGATION_TO_LOGIN_SCREEN = 'LoginScreen';
+export const NAVIGATION_TO_SIGNUP_SCREEN = 'SignupScreen';
+export const DRAWER_NAVIGATION_ROUTES ='drawerNavigationRoutes'
+export const NAVIGATION_TO_DASHBOARD_SCREEN = 'dashboardScreen';
+export const NAVIGATION_TO_ADDNEWPRODUCTS='Add Products'
+export const NAVIGATION_TO_PRODUCTDETAILS='Product Details'
+export const NAVIGATION_TO_EDITPRODUCT='Edit Product'
+export const NAVIGATION_TO_ADDPRODUCTIMAGES='Add product Images'
+export const NAVIGATION_TO_ORDERDETAILS='Order Details'
+export const NAVIGATION_TO_FORGOTPASSWORD='Forgot Password'
+export const NAVIGATION_TO_REPLACEIMAGES='Replace Images'
+export const NAVIGATION_TO_OTP_VERIFICATION='Otp Verification'

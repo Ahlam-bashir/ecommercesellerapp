@@ -6,6 +6,7 @@ import {DIMENS,TYPOGRAPHY} from '../../constants'
 import {isNonEmptyString,isEmailValid,isPhoneNumberValid,isNumber} from '../../utils'
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../constants/matcher';
+import { RNToasty } from 'react-native-toasty';
 
 const forgotPassword =({navigation})=>{
     const [form,setValues] =useState({
@@ -61,16 +62,11 @@ const forgotPassword =({navigation})=>{
                 setValues(prevState=>({
                     ...prevState,
                     loading:false,}))
-                    if(Platform.OS!=='ios'){
-                       
-                ToastAndroid.showWithGravity(
-                  responseJson.extra+'to your registered email',
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-              );
-                    }else{
-                      alert(responseJson.extra+'to your registered email')
-                    }
+                    RNToasty.Success({
+                      title:responseJson.extra,
+                      position:'center'
+                    })
+                    
               
                 navigation.goBack();
               }
@@ -78,15 +74,11 @@ const forgotPassword =({navigation})=>{
                 setValues(prevState=>({
                     ...prevState,
                     loading:false,}))
-                    if(Platform.OS!=='ios'){
-                      ToastAndroid.showWithGravity(
-                        responseJson.extra,
-                      ToastAndroid.SHORT, //can be SHORT, LONG
-                      ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                    );
-                    }else{
-                      alert(responseJson.extra)
-                    }
+                    RNToasty.Show({
+                      title:responseJson.extra,
+                      position:'center'
+                    })
+                    
                
                
                // navigation.goBack();

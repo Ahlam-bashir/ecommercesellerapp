@@ -15,6 +15,7 @@ import { NAVIGATION_TO_ORDERDETAILS } from '../../navigation/routes';
 const dashboardScreen =({navigation})=>{
   const [offline,setOffline] = useState(false)
   const [data,setData] = useState(null)
+  const [Username,setUserName]=useState(null)
 
   const [loading,setLoading] = useState(false)
   const [snackIsVisible, setSnackIsVisible] = useState(false);
@@ -47,6 +48,9 @@ const dashboardData=async ()=>{
           for (let keyVal of keyValArray) {
             myStorage[keyVal[0]] = keyVal[1]
           }
+         const data=JSON.parse(myStorage.data)
+         setUserName(data.firstName  + ' ' +  data.lastName)
+       console.log(data.firstName + 'hgjhgh')
         await  fetch(BASE_URL+'SellerDashboard', {
             method: 'GET',
             headers: {
@@ -125,7 +129,8 @@ const dashboardData=async ()=>{
         {data==null? <Loader loading={loading}/>:
            <View style={styles.main}>
              <View style={styles.header}>
-               <Text type='heading' style={styles.text}>WELCOME</Text>
+               <Text type='heading' style={styles.text}>WELCOME,</Text>
+               <Text type='caption' style={{...styles.text,marginTop:8,fontSize:14}}>{Username.toUpperCase()}</Text>
            </View>
            <View style={styles.rectangleHeader}>
              <TouchableOpacity onPress={()=>navigation.navigate('ManageProductScreenStack')}>
@@ -186,6 +191,30 @@ const dashboardData=async ()=>{
          <View style={styles.paymentsContainer}>
          <View style={{height:40,width:'100%',alignItems:'center'}}>
         
+         <Text type='heading' style={{...styles.heading,alignSelf:'flex-start',color:colors.colors.primary,fontSize:16}}>Pending Orders</Text>
+           </View>
+           <View style={{width:'100%',backgroundColor:colors.colors.gray100,padding:8,borderRadius:10,borderWidth:1,borderColor:colors.colors.gray200}}>
+         <View style={{flexDirection:'row',justifyContent:"space-between",margin:4,marginBottom:10}}>
+              <Text type='subheading' style={{fontSize:12}}>Orders Id</Text>
+              <Text type='subheading' style={{fontSize:12}}>Dated</Text>
+             </View> 
+           {data.pendingOrders.map((items,index)=>( 
+         <TouchableOpacity key={index} onPress={()=>navigation.navigate(NAVIGATION_TO_ORDERDETAILS,{Id:items.id})}>  
+          <View key={index} style={styles.rowStyle}>
+               <View style={{justifyContent:'space-between',flexDirection:'row'}}>  
+                     <Text type='body'>UCM-Orders-{items.Orders.id}</Text>
+                     <Text type='body'>{Moment(items.Orders.dated).format('DD/MM/YYYY')}</Text>
+               </View>
+             
+               </View>
+               </TouchableOpacity>
+         ))}
+         </View>
+        </View>
+      
+         <View style={styles.paymentsContainer}>
+         <View style={{height:40,width:'100%',alignItems:'center'}}>
+        
          <Text type='heading' style={{...styles.heading,alignSelf:'flex-start',color:colors.colors.primary,fontSize:16}}>Delivered Orders</Text>
            </View>
            <View style={{width:'100%',backgroundColor:colors.colors.gray100,padding:8,borderRadius:10,borderWidth:1,borderColor:colors.colors.gray200}}>
@@ -207,6 +236,7 @@ const dashboardData=async ()=>{
          </View>
         </View>
         <View style={styles.paymentsContainer}>
+
         <View style={{height:40,width:'100%',alignItems:'center'}}>
         
         <Text type='heading' style={{...styles.heading,alignSelf:'flex-start',color:colors.colors.primary,fontSize:16}}>Cancelled Orders</Text>
@@ -234,6 +264,30 @@ const dashboardData=async ()=>{
          ))}
          </View>
       </View>
+      <View style={styles.paymentsContainer}>
+         <View style={{height:40,width:'100%',alignItems:'center'}}>
+        
+         <Text type='heading' style={{...styles.heading,alignSelf:'flex-start',color:colors.colors.primary,fontSize:16}}>Returned Orders</Text>
+           </View>
+           <View style={{width:'100%',backgroundColor:colors.colors.gray100,padding:8,borderRadius:10,borderWidth:1,borderColor:colors.colors.gray200}}>
+         <View style={{flexDirection:'row',justifyContent:"space-between",margin:4,marginBottom:10}}>
+              <Text type='subheading' style={{fontSize:12}}>Orders Id</Text>
+              <Text type='subheading' style={{fontSize:12}}>Dated</Text>
+             </View> 
+           {data.returnedOrders.map((items,index)=>( 
+         <TouchableOpacity key={index} onPress={()=>navigation.navigate(NAVIGATION_TO_ORDERDETAILS,{Id:items.id})}>  
+          <View key={index} style={styles.rowStyle}>
+               <View style={{justifyContent:'space-between',flexDirection:'row'}}>  
+                     <Text type='body'>UCM-Orders-{items.Orders.id}</Text>
+                     <Text type='body'>{Moment(items.Orders.dated).format('DD/MM/YYYY')}</Text>
+               </View>
+             
+               </View>
+               </TouchableOpacity>
+         ))}
+         </View>
+        </View>
+     
       <View style={styles.paymentsContainer}>
          <View style={{height:40,width:'100%',alignItems:'center'}}>
         

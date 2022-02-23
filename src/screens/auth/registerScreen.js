@@ -3,11 +3,12 @@ import { View,StyleSheet,Platform, ScrollView, TouchableOpacity, Keyboard ,Check
 import {DIMENS, SPACING,TYPOGRAPHY} from '../../constants'
 import {colors} from '../../theme'
 import {Text,InputText,Loader,Icon,PickerModal,SubscriptionModal} from '../../common'
-import {isNonEmptyString,isEmailValid,isPhoneNumberValid,isNumber} from '../../utils'
+import {isNonEmptyString,isEmailValid,isPhoneNumberValid,isNumber, isMinLength, isNameValid, isPhoneLength, isInvalidCharacters, Pincode} from '../../utils'
 import { NAVIGATION_TO_LOGIN_SCREEN, NAVIGATION_TO_OTP_VERIFICATION } from '../../navigation/routes';
 import Country from '../../constants/data/country.json'
 import { BASE_URL } from '../../constants/matcher';
 import {Picker} from '@react-native-community/picker'
+import { RNToasty } from 'react-native-toasty';
 
 
 const registerScreen = ({navigation}) =>{
@@ -27,22 +28,31 @@ const registerScreen = ({navigation}) =>{
     {
       firstName:'',
       incorrectFirstName:false,
+      firstNameError:'',
       lastname:'',
       incorrectLastName:false,
+      lastNameError:'',
       email:'',
       incorrectEmail:false,
+      emailErrormessage:'',
       confirmEmail:'',
       incorrectConfirmEmail:false,
+      confirmEmailErrormessage:'',
       phoneNumber:'',
       incorrectPhone:false,
+      PhoneError: '',
       mobile:'',
       incorrectMobile:false,
+      mobileError:'',
       streetName:'',
       incorrectStreetName:false,
+      streetError:'',
       buildingName:'',
       incorrectbuildingName:false,
       city:'',
+      buildingerror:'',
       incorrectcity:false,
+      cityError:'',
       country:'',
       incorrectCountry:false,
       state:'',
@@ -51,24 +61,190 @@ const registerScreen = ({navigation}) =>{
       incorrectSubsciption:false,
       pincode:'',
       incorrectPincode:false,
+      pincodeError:'',
       isSelected:false
 
     })
     const [loading,setLoading] = useState(false)
-    const checkField=(fieldKey,fieldErrorKey,fieldValidater)=>{
-      if(!fieldValidater(form[fieldKey])){
+    const checkField=(fieldKey,fieldErrorKey,fieldValidater,error)=>{
+    /* if(!fieldValidater(form[fieldKey])){
            setValues(prevState=>({
              ...prevState,
              [fieldErrorKey]:true
            }));
            return false;
       }
-      return true;
+      return true;*/
+      if(!isNonEmptyString(form[fieldKey])){
+        setValues(prevState => ({
+          ...prevState,
+          [fieldErrorKey]: true,
+          [error]:'Mandatory field'
+        }));
+        return false;
+        
+       }
+       switch(fieldValidater)
+       {
+         case isNonEmptyString:
+           
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'Mandatory field'
+             }));
+             return false;
+             
+          }
+         
+           return true;
+          
+   
+         
+         case isNameValid:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'please enter valid details'
+             }));
+             return false;
+           }
+           return true;
+          
+   
+         }
+         case isMinLength:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'Minimum two charcters allowed'
+             }));
+             return false;
+           }
+           return true;
+         
+   
+         }
+         case isEmailValid:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'please enter valid details'
+             }));
+             return false;
+           }
+           return true;
+          
+   
+         }
+         case isInvalidCharacters:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'please enter valid details'
+             }));
+             return false;
+           }
+           return true;
+          
+   
+         }
+         
+         case Pincode:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'please enter valid detailss'
+             }));
+             return false;
+           }
+           return true;
+           
+   
+         }
+         case isPhoneLength:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'minimum length should be 7'
+             }));
+             return false;
+           }
+           return true;
+   
+         }
+         case isPhoneNumberValid:{
+           if (!fieldValidater(form[fieldKey])) {
+             setValues(prevState => ({
+               ...prevState,
+               [fieldErrorKey]: true,
+               [error]:'please enter valid number'
+             }));
+             return false;
+           }
+           return true;
+           
+   
+         }
+   
+       }
 
     }
     const checkvalidation=()=>{
-      let isValid=true
-       isValid=isValid  &&   checkField('firstName','incorrectFirstName',isNonEmptyString)
+    
+      let isValid = true;
+      isValid =
+        isValid &&   checkField('firstName','incorrectFirstName',isNonEmptyString,'firstNameError')
+        isValid =
+        isValid && checkField('firstName','incorrectFirstName',isMinLength,'firstNameError')
+        isValid =
+        isValid && checkField('firstName','incorrectFirstName',isNameValid,'firstNameError')  
+      
+      isValid =
+        isValid && checkField('lastname', 'incorrectLastName', isNameValid,'lastNameError');
+        isValid =
+        isValid && checkField('lastname', 'incorrectLastName', isMinLength,'lastNameError');
+    
+      isValid = isValid && checkField('email', 'incorrectEmail', isEmailValid,'emailErrormessage');
+      isValid =
+        isValid &&
+        checkField('confirmEmail', 'incorrectConfirmEmail', isEmailValid,'emailErrormessage');
+      isValid =
+        isValid &&
+        checkField('phoneNumber', 'incorrectPhone', isPhoneNumberValid,'PhoneError');
+      isValid =
+        isValid && checkField('mobile', 'incorrectMobile', isPhoneNumberValid,'mobileError');
+        isValid =
+        isValid &&
+        checkField('streetName', 'incorrectStreetName', isMinLength,'streetError');
+      isValid =
+        isValid &&
+        checkField('streetName', 'incorrectStreetName', isInvalidCharacters,'streetError');
+  
+      isValid =
+        isValid &&
+        checkField('buildingName', 'incorrectbuildingName', isInvalidCharacters,'buildingerror');
+        isValid =
+        isValid &&
+        checkField('buildingName', 'incorrectbuildingName', isMinLength,'buildingerror');
+    
+      isValid = isValid && checkField('city', 'incorrectcity', isInvalidCharacters,'cityError');
+      isValid = isValid && checkField('city', 'incorrectcity', isMinLength,'cityError');
+    
+      //  isValid=isValid  &&   checkField('country','incorrectCountry',isNonEmptyString)
+      //  isValid=isValid  &&   checkField('state','incorrectState',isNonEmptyString)
+      isValid =
+        isValid && checkField('pincode', 'incorrectPincode', Pincode,'pincodeError');
+  
+      return isValid;
+     /*  isValid=isValid  &&   checkField('firstName','incorrectFirstName',isNonEmptyString)
        isValid=isValid  &&   checkField('lastname','incorrectLastName',isNonEmptyString)
        isValid=isValid  &&   checkField('email','incorrectEmail',isEmailValid)
        isValid=isValid  &&   checkField('confirmEmail','incorrectConfirmEmail',isEmailValid)
@@ -80,7 +256,7 @@ const registerScreen = ({navigation}) =>{
      //  isValid=isValid  &&   checkField('country','incorrectCountry',isNonEmptyString)
      //  isValid=isValid  &&   checkField('state','incorrectState',isNonEmptyString)
        isValid=isValid  &&   checkField('pincode','incorrectPincode',isNonEmptyString)
-        
+     */   
        return isValid
       }
   const onSignup =()=>{
@@ -175,17 +351,11 @@ const registerScreen = ({navigation}) =>{
           Object.entries(responseJson.ModelState).forEach(([key, value]) => {
             console.log(`${key}: ${value}`)
             if(Object.entries(value).length!==0){
-              if(Platform.OS!=='ios'){
-                ToastAndroid.showWithGravity(
-                  value.toString()  + ' ' +   'at'  + ' ' +   key,
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-              );
-            }
-              else{
-                alert( value.toString()  + ' ' +   'at'  + ' ' +   key,
-                )
-              }
+              RNToasty.Error({
+                title: value.toString()  + ' ' +   'at'  + ' ' +   key,
+                position:'bottom'
+              })
+              
             }
            
         
@@ -194,23 +364,23 @@ const registerScreen = ({navigation}) =>{
          //navigation.replace(NAVIGATION_TO_LOGIN_SCREEN)
          }
          else {
-          alert(responseJson.Message)
+           RNToasty.Success({
+             title:responseJson.Message,
+             position:'bottom'
+
+           })
+          
          }
       //Showing response message coming from server 
         console.log(responseJson);
     })
     .catch((error) => {
       setLoading(false)
-      if(Platform.OS!=='ios'){
-        ToastAndroid.showWithGravity(
-          error.toString(),
-          ToastAndroid.SHORT, //can be SHORT, LONG
-          ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-        );
-    
-      }else{
-        alert(error.toString())
-      }
+      RNToasty.Error({
+        title:'Something went wrong',
+        position:'bottom'
+      })
+     
   
     //display error message
      console.warn(error);
@@ -279,6 +449,7 @@ const registerScreen = ({navigation}) =>{
    const onChange = (item)=>{
       console.log(item)       
       setModalVisible(false)
+      setSearch('')
       if(item.countryName)
       {
         setCountryName(item.countryName)
@@ -332,6 +503,7 @@ const onSubChange = (item)=>{
   
 }
 const searchFilterFunction = (text) => {
+  setSearch(text)
   // Check if searched text is not blank
   if (text) {
     // Inserted text is not blank
@@ -371,18 +543,6 @@ const searchFilterFunction = (text) => {
       <SafeAreaView style={{flex:1}}>
       <View style={styles.container}>
         <Loader loading={loading}/>
-        <PickerModal
-                 visible={modalVisible}
-                 onSelect={(item)=>onChange(item)}
-                 item={countries}
-                 onClose={()=>setModalVisible(false)}
-                 searchFilterFunction={(text)=>searchFilterFunction(text)}
-                 searchText={search}
-
-
-                 
-                 
-             />
                <SubscriptionModal
                  visible={subModalVisible}
                  item={subscriptionData}
@@ -408,9 +568,25 @@ const searchFilterFunction = (text) => {
         
         >
       
-      <ScrollView style={{marginBottom:70}}
+      <ScrollView style={{marginBottom:70}
+
+      }
       contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps={'always'}
       >
+          <PickerModal
+                 visible={modalVisible}
+                 onSelect={(item)=>onChange(item)}
+                 item={countries}
+                 onClose={()=>setModalVisible(false)}
+                 searchFilterFunction={(text)=>searchFilterFunction(text)}
+                 searchText={search}
+
+
+                 
+                 
+             />
+      
           <View style={styles.centerView}>
             <View style={styles.fieldContainer}>
             <InputText
@@ -424,26 +600,49 @@ const searchFilterFunction = (text) => {
             })
             )}
             containerStyle={styles.containerStyle}
+            maxLength={24} 
+            errorMessage={
+              form.incorrectFirstName ? form.firstNameError : ''
+            }
+           
 
           //  containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
-            errorMessage={form.incorrectFirstName?'FirstName should not be blank':''}
-            onBlur={()=>checkField('firstName','incorrectFirstName',isNonEmptyString)}
+           // errorMessage={form.incorrectFirstName?'FirstName should not be blank':''}
+            onBlur={() =>{
+              checkField('firstName','incorrectFirstName',isNonEmptyString,'firstNameError')
+              checkField('firstName','incorrectFirstName',isMinLength,'firstNameError')
+              checkField('firstName','incorrectFirstName',isNameValid,'firstNameError')  
+            }
+            }
+           // onBlur={()=>checkField('firstName','incorrectFirstName',isNonEmptyString)}
             underlineColorAndroid = {colors.colors.transparent}
             />
                <InputText
             label='Last Name'
             labelStyle={''}
+            maxLength={24} 
             autoCorrect={false}
             containerStyle={styles.containerStyle}
 
           //  containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectLastName?'LastName should not be blank':''}
+          //  errorMessage={form.incorrectLastName?'LastName should not be blank':''}
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               lastname:value.trim(),
               incorrectLastName:false,      
         }))}
-        onBlur={()=>checkField('lastname','incorrectLastName',isNonEmptyString)}
+        errorMessage={
+          form.incorrectLastName ? form.lastNameError: ''
+        }
+        onBlur={() =>{
+          checkField('lastname', 'incorrectLastName', isNameValid,'lastNameError')
+          checkField('lastname', 'incorrectLastName', isNonEmptyString,'lastNameError')
+          checkField('lastname', 'incorrectLastName', isMinLength,'lastNameError')
+        }}
+       
+       
+      
+       // onBlur={()=>checkField('lastname','incorrectLastName',isNonEmptyString)}
         underlineColorAndroid = {colors.colors.transparent}
 
             />     
@@ -456,32 +655,57 @@ const searchFilterFunction = (text) => {
             containerStyle={styles.containerStyle}
 
            // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectEmail?'Email id should be correct':''}
+            //errorMessage={form.incorrectEmail?'Email id should be correct':''}
+            errorMessage={
+              form.incorrectEmail ? form.emailErrormessage : ''
+            }
+           
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               email:value.trim(),
               incorrectEmail:false,      
         }))}
-        onBlur={()=>checkField('email','incorrectEmail',isEmailValid)}
+        onBlur={() => checkField('email', 'incorrectEmail', isEmailValid,'emailErrormessage')}
+            
+       // onBlur={()=>checkField('email','incorrectEmail',isEmailValid)}
         underlineColorAndroid = {colors.colors.transparent}
-
-
             />
-                    <InputText
+        <InputText
             keyboardType='email-address'
             label='Confirm Email'
             labelStyle={''}
             autoCorrect={false}
             containerStyle={styles.containerStyle}
-
+            errorMessage={
+              form.incorrectConfirmEmail
+                ? form.confirmEmailErrormessage
+                : ''
+            }
            // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectConfirmEmail?'ConfirmsEmail should match email':''}
+          //  errorMessage={form.incorrectConfirmEmail?'ConfirmsEmail should match email':''}
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               confirmEmail:value.trim(),
               incorrectConfirmEmail:false,      
         }))}
-        onBlur={()=>checkField('confirmEmail','incorrectConfirmEmail',isEmailValid)}
+        onBlur={() =>{
+          checkField(
+            'confirmEmail',
+            'incorrectConfirmEmail',
+            isEmailValid,
+            'confirmEmailErrormessage'
+          )
+          if(form.email!==''&& form.email!==form.confirmEmail){
+            setValues(prevState => ({
+              ...prevState,
+              incorrectConfirmEmail: true,
+              confirmEmailErrormessage:'email and confirm email should be same'
+            }));
+
+          }
+        }
+        }
+      //  onBlur={()=>checkField('confirmEmail','incorrectConfirmEmail',isEmailValid)}
         underlineColorAndroid = {colors.colors.transparent}
 
     
@@ -489,18 +713,36 @@ const searchFilterFunction = (text) => {
            <InputText
             label='Phone Number'
             labelStyle={''}
+            maxLength={16} 
             autoCorrect={false}
             keyboardType='number-pad'
             containerStyle={styles.containerStyle}
-
+            errorMessage={
+              form.incorrectPhone ? form.PhoneError : ''
+            }
             //containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectPhone?'Phone number should not be blank':''  }
+          //  errorMessage={form.incorrectPhone?'Phone number should not be blank':''  }
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               phoneNumber:value.trim(),
               incorrectPhone:false,      
         }))}
-        onBlur={()=>checkField('phoneNumber','incorrectPhone',isPhoneNumberValid)}
+        onBlur={() =>{
+          checkField(
+            'phoneNumber',
+            'incorrectPhone',
+            isPhoneLength,
+            'PhoneError' 
+          )
+          checkField(
+            'phoneNumber',
+            'incorrectPhone',
+            isPhoneNumberValid,
+            'PhoneError' 
+          )
+        }
+        }
+       // onBlur={()=>checkField('phoneNumber','incorrectPhone',isPhoneNumberValid)}
         underlineColorAndroid = {colors.colors.transparent}
 
     
@@ -510,34 +752,70 @@ const searchFilterFunction = (text) => {
             keyboardType='number-pad'
             label='Mobile'
             labelStyle={''}
+            maxLength={10} 
             autoCorrect={false}
             containerStyle={styles.containerStyle}
-
+            errorMessage={
+              form.incorrectMobile ? form.mobileError : ''
+            }
+          
            // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectMobile?'Mobile No should not be blank':''}
+          //  errorMessage={form.incorrectMobile?'Mobile No should not be blank':''}
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               mobile:value.trim(),
               incorrectMobile:false,      
         }))}
-        onBlur={()=>checkField('mobile','incorrectMobile',isPhoneNumberValid)}
+        onBlur={() =>{
+          checkField('mobile', 'incorrectMobile', isPhoneLength,'mobileError')
+        
+          checkField('mobile', 'incorrectMobile', isPhoneNumberValid,'mobileError')
+        }}
+       // onBlur={()=>checkField('mobile','incorrectMobile',isPhoneNumberValid)}
         underlineColorAndroid = {colors.colors.transparent}
 
            />
               <InputText
             label='Street Name'
             labelStyle={''}
+            maxLength={45}
             autoCorrect={false}
             containerStyle={styles.containerStyle}
+            errorMessage={
+              form.incorrectStreetName
+                ? form.streetError
+                : ''
+            }
 
          //   containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectStreetName?'Street Name should not be blank':''}
+          //  errorMessage={form.incorrectStreetName?'Street Name should not be blank':''}
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               streetName:value.trim(),
               incorrectStreetName:false,      
         }))}
-        onBlur={()=>checkField('streetName','incorrectStreetName',isNonEmptyString)}
+        onBlur={() =>{
+          checkField(
+            'streetName',
+            'incorrectStreetName',
+            isNonEmptyString,
+            'streetError'
+          )
+          checkField(
+            'streetName',
+            'incorrectStreetName',
+            isInvalidCharacters,
+            'streetError'
+          )
+          checkField(
+            'streetName',
+            'incorrectStreetName',
+             isMinLength,
+            'streetError'
+          )
+        }
+        }
+       // onBlur={()=>checkField('streetName','incorrectStreetName',isNonEmptyString)}
         underlineColorAndroid = {colors.colors.transparent}
 
 
@@ -545,17 +823,37 @@ const searchFilterFunction = (text) => {
                <InputText
             label='Building Name'
             labelStyle={''}
+            maxLength={45}
             autoCorrect={false}
             containerStyle={styles.containerStyle}
-
+            errorMessage={
+              form.incorrectbuildingName
+                ? form.buildingerror
+                : ''
+            }
            // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectbuildingName?'Building Name should not be blank':''}
+          //  errorMessage={form.incorrectbuildingName?'Building Name should not be blank':''}
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               buildingName:value.trim(),
               incorrectbuildingName:false,      
         }))}
-        onBlur={()=>checkField('buildingName','incorrectbuildingName',isNonEmptyString)}
+        onBlur={() =>{
+          checkField(
+            'buildingName',
+            'incorrectbuildingName',
+            isInvalidCharacters,
+            'buildingerror'
+          )
+          checkField(
+            'buildingName',
+            'incorrectbuildingName',
+            isMinLength,
+            'buildingerror'
+          )
+          }  
+        }
+       // onBlur={()=>checkField('buildingName','incorrectbuildingName',isNonEmptyString)}
         underlineColorAndroid = {colors.colors.transparent}
 
 
@@ -563,17 +861,27 @@ const searchFilterFunction = (text) => {
                <InputText
             label='City'
             labelStyle={''}
+            maxLength={45}
             autoCorrect={false}
             containerStyle={styles.containerStyle}
 
            // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-            errorMessage={form.incorrectcity?'city Name should not be blank':''}
+          //  errorMessage={form.incorrectcity?'city Name should not be blank':''}
+          errorMessage={
+            form.incorrectcity ? form.cityError: ''
+          }
             onChangeText={value=>setValues(prevState=>({
               ...prevState,
               city:value.trim(),
               incorrectcity:false,      
         }))}
-        onBlur={()=>checkField('city','incorrectcity',isNonEmptyString)}
+        onBlur={() =>{
+          checkField('city', 'incorrectcity', isNonEmptyString,'cityError')
+          checkField('city', 'incorrectcity', isMinLength,'cityError')
+          checkField('city', 'incorrectcity', isInvalidCharacters,'cityError')
+        }
+        }
+       // onBlur={()=>checkField('city','incorrectcity',isNonEmptyString)}
         underlineColorAndroid = {colors.colors.transparent}
 
 
@@ -584,17 +892,24 @@ const searchFilterFunction = (text) => {
               keyboardType='number-pad'
                label='Pincode'
                labelStyle={''}
+               maxLength={6} 
                autoCorrect={false}
                containerStyle={styles.containerStyle}
+               errorMessage={
+                form.incorrectPincode ? form.pincodeError : ''
+              }
 
               // containerStyle={Platform.OS!=='android'? styles.defaultMargin:null}
-               errorMessage={form.incorrectPincode?'pincode should not be blank':''}
+             //  errorMessage={form.incorrectPincode?'pincode should not be blank':''}
                onChangeText={value=>setValues(prevState=>({
               ...prevState,
                 pincode:value.trim(),
                 incorrectPincode:false,      
             }))}
-        onBlur={()=>checkField('pincode','incorrectPincode',isNonEmptyString)}
+            onBlur={() =>
+              checkField('pincode', 'incorrectPincode', Pincode,'pincodeError')
+            }
+      //  onBlur={()=>checkField('pincode','incorrectPincode',isNonEmptyString)}
         underlineColorAndroid = {colors.colors.transparent}
 
 

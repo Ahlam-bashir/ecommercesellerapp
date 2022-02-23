@@ -1,5 +1,5 @@
 import React,{useEffect, useState} from 'react'
-import {View,StyleSheet,FlatList, TouchableOpacity,ToastAndroid,TextInput} from 'react-native';
+import {View,StyleSheet,FlatList, TouchableOpacity,ToastAndroid,TextInput,RefreshControl} from 'react-native';
 import {Text,Loader,Icon, ImageComponent} from '../../../common'
 import { NAVIGATION_TO_ORDERDETAILS } from '../../../navigation/routes';
 import { colors } from '../../../theme';
@@ -13,17 +13,24 @@ const DeliveredOrders = ({navigation})=>{
     const [deliverOrder,setDeliverOrder] = useState([])
     const [searchText,setSearchText] = useState('')
     const [arrayholder,setarrayholder] = useState([])
+    const [refreshing, setRefreshing] = useState(true);
   
     const [loading,setLoading] = useState(false)
       useEffect(()=>{
             deliveredOrders()
+            const unsubscribe = navigation.addListener('focus', () => {
+            
+              deliveredOrders()
+            });
+            return unsubscribe;
       },[])
        
       const ViewOrder =(id)=>{
           navigation.navigate(NAVIGATION_TO_ORDERDETAILS,{Id:id})
       }
       const  deliveredOrders=()=>{
-        setLoading(true)
+       
+        
        AsyncStorage.getAllKeys().then((keyArray) => {
          AsyncStorage.multiGet(keyArray).then((keyValArray) => {
            let myStorage = {};
@@ -46,7 +53,7 @@ const DeliveredOrders = ({navigation})=>{
                //setLoading(false)
                //Showing response message coming from server 
                console.log(responseJson);
-                              
+                setRefreshing(false)              
                if(responseJson.length===0){
                    setLoading(false)
                    
@@ -89,6 +96,12 @@ const DeliveredOrders = ({navigation})=>{
         setSearchText(text)
 
       }
+      const onRefresh = () => {
+        //Clear old data of the list
+        setDeliverOrder([])
+        //Call the Service to get the latest data
+       deliveredOrders()
+      };
 
 
 
@@ -113,6 +126,13 @@ const DeliveredOrders = ({navigation})=>{
              
              data={deliverOrder}
              keyExtractor={(id,index)=>{index.toString()}}
+             refreshControl={
+              <RefreshControl
+                //refresh control used for the Pull to Refresh
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
              renderItem={(itemData)=>{
                  return(
                   <TouchableOpacity onPress={()=>ViewOrder(itemData.item.id)} key={itemData.item.id}>

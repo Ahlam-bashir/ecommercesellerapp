@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react'
-import {View,StyleSheet,FlatList, TouchableOpacity,ToastAndroid,TextInput, Platform} from 'react-native';
+import {View,StyleSheet,FlatList, TouchableOpacity,ToastAndroid,TextInput, Platform,RefreshControl} from 'react-native';
 import {Text,Loader, Icon,ImageComponent} from '../../../common'
 import { NAVIGATION_TO_ORDERDETAILS } from '../../../navigation/routes';
 import { colors } from '../../../theme';
@@ -15,11 +15,18 @@ const ActiveOrders = ({navigation})=>{
       const [loading,setLoading]= useState(false)
       const [searchText,setSearchText] = useState('')
       const [arrayholder,setarrayholder] = useState([])
+      const [refreshing, setRefreshing] = useState(true);
+ 
       useEffect(()=>{
           manageOrders()
-      },[])
+          const unsubscribe = navigation.addListener('focus', () => {
+            
+            manageOrders();
+          });
+          return unsubscribe;
+      },[navigation])
        const  manageOrders=()=>{
-        setLoading(true)
+       
        AsyncStorage.getAllKeys().then((keyArray) => {
          AsyncStorage.multiGet(keyArray).then((keyValArray) => {
            let myStorage = {};
@@ -40,6 +47,7 @@ const ActiveOrders = ({navigation})=>{
              .then((responseJson) => {
                  
                setLoading(false)
+               setRefreshing(false)
                //Showing response message coming from server 
                console.log(responseJson);
                            
@@ -89,14 +97,21 @@ const ActiveOrders = ({navigation})=>{
       }
       const searchData=(text)=>{
         const newData= arrayholder.filter(item=>{
-          const itemData= item.Products.name.toUpperCase();
-          const textData= text.toUpperCase()
+         // const itemData= item.Products.name.toUpperCase();
+         const itemData=item.Orders.id.toString().toUpperCase()
+          const textData= text.toUpperCase();
           return itemData.indexOf(textData)>-1
         })
         setOrders(newData)
         setSearchText(text)
 
       }
+      const onRefresh = () => {
+        //Clear old data of the list
+        setOrders([])
+        //Call the Service to get the latest data
+        manageOrders()
+      };
 
    return(
        <View style={styles.main}>
@@ -106,7 +121,7 @@ const ActiveOrders = ({navigation})=>{
          <View style={{width:'100%',height:50,backgroundColor:colors.colors.gray200,bottom:6,flexDirection:'row',alignItems:'center',borderRadius: 8,}}>
                   <Icon name='search' size={20} color={colors.colors.gray500} style={{padding: 6,}}/>
                   <TextInput  
-                  placeholder='Search here...'
+                  placeholder='Search by OrderId'
                   value={searchText}
                   style={{borderWidth:0,padding:6,width:'100%'}}
                   onChangeText={(text)=>searchData(text)}
@@ -119,6 +134,13 @@ const ActiveOrders = ({navigation})=>{
              
              data={orders}
              keyExtractor={(id,index)=>{index.toString()}}
+             refreshControl={
+              <RefreshControl
+                //refresh control used for the Pull to Refresh
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
              renderItem={(itemData)=>{
 
                  return(

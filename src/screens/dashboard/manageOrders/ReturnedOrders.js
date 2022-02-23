@@ -7,6 +7,7 @@ import {encode} from 'base-64'
 import { loadSeller } from '../../utils/storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../../constants/matcher';
+import { RefreshControl } from 'react-native';
 
 
 const ReturnedOrders = ({navigation})=>{
@@ -14,9 +15,16 @@ const ReturnedOrders = ({navigation})=>{
     const [loading,setLoading] = useState(false)
     const [searchText,setSearchText] = useState('')
     const [arrayholder,setarrayholder] = useState([])
+    const [refreshing, setRefreshing] = useState(true);
+  
    
       useEffect(()=>{
         returnOrders()
+        const unsubscribe = navigation.addListener('focus', () => {
+            
+          returnOrders()
+        });
+        return unsubscribe;
   },[])
 
        
@@ -24,7 +32,7 @@ const ReturnedOrders = ({navigation})=>{
         navigation.navigate(NAVIGATION_TO_ORDERDETAILS,{Id:id})
     }
       const  returnOrders=()=>{
-        setLoading(true)
+       
        AsyncStorage.getAllKeys().then((keyArray) => {
          AsyncStorage.multiGet(keyArray).then((keyValArray) => {
            let myStorage = {};
@@ -48,7 +56,7 @@ const ReturnedOrders = ({navigation})=>{
                //Showing response message coming from server 
                console.log(responseJson);
                
-               
+               setRefreshing(false)
                 if(responseJson.length===0){
                    setLoading(false)
                 
@@ -90,6 +98,12 @@ const ReturnedOrders = ({navigation})=>{
         setSearchText(text)
 
       }
+      const onRefresh = () => {
+        //Clear old data of the list
+        setReturnedOrders([])
+        //Call the Service to get the latest data
+      returnOrders()
+      };
 
 
 
@@ -113,6 +127,13 @@ const ReturnedOrders = ({navigation})=>{
              
              data={returnedOrders}
              keyExtractor={(item,index)=>index.toString()}
+             refreshControl={
+              <RefreshControl
+                //refresh control used for the Pull to Refresh
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
              renderItem={(itemData)=>{
                  return(
                   <TouchableOpacity onPress={()=>ViewOrder(itemData.item.id)} key={itemData.item.id}>

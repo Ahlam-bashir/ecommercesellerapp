@@ -7,6 +7,7 @@ import { DIMENS, TYPOGRAPHY } from '../../constants'
 import { colors } from '../../theme'
 import { DRAWER_NAVIGATION_ROUTES } from '../../navigation/routes';
 import { BASE_URL } from '../../constants/matcher';
+import { RNToasty } from 'react-native-toasty';
 
 
 const AddProductImages = ({navigation,route}) =>{
@@ -41,16 +42,16 @@ const AddProductImages = ({navigation,route}) =>{
           console.log(response);
     
           if(response.didCancel){
-            alert('User Cancelled camerapicker')
             return
           }else if(response.errorCode== 'camera_unavailable'){
-            alert('Camera not available on this device')
             return
           }else if(response.errorCode=='permission'){
-            alert('permission not satisfied')
             return
           }else if(response.errorCode=='others'){
-            alert(response.errorMessage)
+            RNToasty.Error({
+              title:response.errorMessage
+            })
+          
             return
           }
           console.log('base64 -> ', response.base64);
@@ -112,17 +113,11 @@ const AddProductImages = ({navigation,route}) =>{
       }
       const uploadImages =()=>{
            if(Object.keys(file.photo1).length===0){
-             if(Platform.OS!=='ios'){
-              ToastAndroid.showWithGravity(
-                'Atleast upload one sub image',
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-              );
+             RNToasty.Warn({
+               title:'Atleast upload one sub image',
+               position:'center'
+             })
              
-             }
-             else{
-               alert('atleast upload one sub image')
-             }
              return
 
            }
@@ -161,22 +156,24 @@ const AddProductImages = ({navigation,route}) =>{
         setLoading(false)
            if(responseJson.isUploaded===true)
          { console.log(responseJson)
-           alert(responseJson.message)
+          RNToasty.Success({
+            title:responseJson.message,
+            position:'center'
+          })
+           
            navigation.navigate('ManageProducts')
 
 
          }else if(responseJson.isUploaded===false){
            setLoading(false)
-           if(Platform.OS!=='ios'){
-            ToastAndroid.showWithGravity(
-              responseJson.message,
-              ToastAndroid.SHORT, //can be SHORT, LONG
-              ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-            );
           
-        }else{
-          alert(responseJson.message)
-        }
+             RNToasty.Error({
+               title:responseJson.message,
+               position:'center'
+             })
+           
+          
+        
          
 
          }
@@ -206,16 +203,11 @@ const AddProductImages = ({navigation,route}) =>{
       const uploadMainImage =()=>{
         console.log('mainImage')
         if(Object.keys(image).length===0){
-          if(Platform.OS!=='ios'){
-            ToastAndroid.showWithGravity(
-              ' Select Image',
-              ToastAndroid.SHORT, //can be SHORT, LONG
-              ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-            );
-           
-          }else{
-            alert('Upload Main Image')
-          }
+          RNToasty.Warn({
+            title:'Upload Main Image',
+            position:'center'
+          })
+          
            return
 
          }
@@ -241,13 +233,21 @@ const AddProductImages = ({navigation,route}) =>{
         setLoading(false)
            if(responseJson.isUploaded===true)
          { 
-           alert(responseJson.message)
+          
+           RNToasty.Success({
+             title:responseJson.message,
+             position:'center'
+           })
              setDisableImages(true)
 
 
           }else if(responseJson.isUploaded===false){
             setLoading(false)
-            alert(responseJson.message)
+            RNToasty.Error({
+              title:responseJson.message,
+              position:'center'
+            })
+          
           }
                  //Showing response message coming from server 
               //  navigation.navigate('ManageProducts')

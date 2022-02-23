@@ -3,13 +3,14 @@ import {View,StyleSheet,Platform,TouchableOpacity, Keyboard, ScrollView} from 'r
 import DropDownPicker from 'react-native-dropdown-picker'
 import { Text,Icon,InputText,Loader, VariationPicker } from '../../common'
 import { DIMENS, TYPOGRAPHY } from '../../constants'
-import { isNonEmptyString } from '../../utils'
+import { isNonEmptyString, isPriceRange } from '../../utils'
 import { colors } from '../../theme'
 import { BASE_URL } from '../../constants/matcher'
 import AsyncStorage from '@react-native-community/async-storage'
 import { encode } from 'base-64'
 import {launchImageLibrary} from 'react-native-image-picker';
 import { set } from 'react-native-reanimated'
+import { RNToasty } from 'react-native-toasty'
 
 const AddGroupVariation =({navigation,route})=>{
     console.log(route.params)
@@ -24,6 +25,7 @@ const AddGroupVariation =({navigation,route})=>{
     const [form,setform]= useState({
         price:'',
         incorrectPrice:false,
+        priceError:'',
         stock:'',
         incorrectStock:false,
         extraInfo:'',
@@ -183,7 +185,11 @@ const AddGroupVariation =({navigation,route})=>{
               setLoading(false)
                        //Showing response message coming from server 
               console.log(responseJson);
-              alert(responseJson.extra)
+              RNToasty.Success({
+                title:responseJson.extra,
+                position:'center'
+              })
+              
               
               })
               .catch((error) => {
@@ -260,8 +266,28 @@ const AddGroupVariation =({navigation,route})=>{
             underlineColorAndroid = {colors.colors.transparent}
 
          
-            errorMessage={form.incorrectPrice?'MandatoryField':""}
-            onBlur={()=>checkField('price','incorrectPrice',isNonEmptyString)}
+            errorMessage={form.incorrectPrice?form.priceError:""}
+            onBlur={()=>{
+              if(!isNonEmptyString(form.price)){
+                setform(prevState=>({
+                  ...prevState,
+                  priceError:'mandatory field',
+                 
+                  incorrectPrice:true
+            }))
+          }else if(isNonEmptyString(form.price) && isPriceRange(form.price)){
+            setform(prevState=>({
+              ...prevState,
+              priceError:'out of range',
+             
+              incorrectPrice:true
+
+          }))
+
+              
+            }}}
+    
+           // onBlur={()=>checkField('price','incorrectPrice',isNonEmptyString)}
     
          
             />

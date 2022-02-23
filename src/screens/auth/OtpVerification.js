@@ -7,6 +7,7 @@ import {isNonEmptyString,isEmailValid,isPhoneNumberValid,isNumber} from '../../u
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../constants/matcher';
 import { NAVIGATION_TO_LOGIN_SCREEN } from '../../navigation/routes';
+import { RNToasty } from 'react-native-toasty';
 
 const OtpVerification =({navigation,route})=>{
     const userid=route.params.userid
@@ -62,18 +63,21 @@ const OtpVerification =({navigation,route})=>{
                     setValues(prevState=>({
                         ...prevState,
                         loading:false,}))
-                        ToastAndroid.showWithGravity(
-                            responseJson.status,
-                          ToastAndroid.SHORT, //can be SHORT, LONG
-                          ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                        );
-        
+                        RNToasty.Error({
+                          title:responseJson.status,
+                          position:'center'
+                        })
+                        
                   
                  }else{
                     setValues(prevState=>({
                         ...prevState,
                         loading:false,}))
-                        alert(responseJson.status)
+                        RNToasty.Success({
+                          title:responseJson.status,
+                          position:'center'
+                        })
+                     
                         navigation.replace(NAVIGATION_TO_LOGIN_SCREEN)
  
 

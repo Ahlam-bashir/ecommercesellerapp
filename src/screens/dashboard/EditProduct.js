@@ -35,7 +35,7 @@ import { RichEditor, RichToolbar,actions,defaultActions } from 'react-native-pel
 import DropDownPicker from 'react-native-dropdown-picker'
 import {Picker} from '@react-native-community/picker'
 import { useEffect } from 'react'
-import { isNonEmptyString } from '../../utils'
+import { isMinDescritpion, isMinLength, isMinLengthName, isNonEmptyString, isPriceRange, isWidth } from '../../utils'
 import AsyncStorage from '@react-native-community/async-storage'
 import  Country from '../../constants/data/country.json'
 import { BASE_URL } from '../../constants/matcher';
@@ -43,6 +43,7 @@ import { NAVIGATION_TO_REPLACEIMAGES } from '../../navigation/routes'
 import {decode} from 'html-entities';
 import HandmadePercent from '../../common/picker/HandmadePercent'
 import RenderHTML from 'react-native-render-html';
+import { RNToasty } from 'react-native-toasty'
 const height=70
 const EditProduct =({navigation,route})=>{
   const [filteredDataSource, setFilteredDataSource] = useState([]);
@@ -66,24 +67,33 @@ const EditProduct =({navigation,route})=>{
     const [form,setValues] = useState({
       productName:"",
       incorrectProductName:false,
+      productNameError:'',
       price:'',
       incorrectPrice:false,
+      priceError:'',
       taxes:'',
       incorrectTaxes:false,
+      taxError:'',
       width:'',
       incorrectwidth:false,
+      widthError:'',
       height:'',
+      heightError:'',
       incorrectheight:false,
       length:'',
       incorrectLength:false,
+      lenghtError:'',
       description:'',
       incorrectDescription:false,
       weight:'',
+      weightError:'',
       incorrectweight:false,
       stock:'',
+      stockError:'',
       incorrectStock:false,
       categoryId:'',
       categoryName:'',
+      discountError:'',
       sku:'',
       countryId:'',
       stateId:'',
@@ -99,10 +109,12 @@ const EditProduct =({navigation,route})=>{
       incorrectDiscount:false,
       highlights:'',
       incorrectHightlights:false,
+      highlightsError:'',
       subCategoryId:'',
       subcategoryName:'',
       handmadePercent: 'Handmade %',
       isGITagged: false,
+      descriptionError:'',
    
     })
     const [loading,setLoading] = useState(false)
@@ -276,19 +288,130 @@ const EditProduct =({navigation,route})=>{
       setFilteredDataSource(Country)
     }
    
-    const checkField=(fieldKey,fieldErrorKey,fieldValidater)=>{
-      if(!fieldValidater(form[fieldKey])){
-           setValues(prevState=>({
-             ...prevState,
-             [fieldErrorKey]:true
-           }));
-           return false;
-      }
-      return true;
+    const checkField=(fieldKey,fieldErrorKey,fieldValidater,error)=>{
+      if(!isNonEmptyString(form[fieldKey])){
+        setValues(prevState => ({
+          ...prevState,
+          [fieldErrorKey]: true,
+          [error]:'Mandatory field'
+        }));
+        return false;
+        
+       }  
+      
+       switch(fieldValidater)
+       {
+         case isMinLengthName:
+           
+           if (!fieldValidater(form[fieldKey])) {
+            setValues(prevState => ({
+              ...prevState,
+              [fieldErrorKey]: true,
+              [error]:'Minimun  3  characters'
+            }));
+            return false;
+          }
+          return true
+          case isPriceRange:{
+            if (fieldValidater(form[fieldKey])) {
+              setValues(prevState => ({
+                ...prevState,
+                [fieldErrorKey]: true,
+                [error]:'out of Range'
+              }));
+              return false;
+            }
+            return true
+  
+          }
+          case isWidth:{
+            if (fieldValidater(form[fieldKey])) {
+              setValues(prevState => ({
+                ...prevState,
+                [fieldErrorKey]: true,
+                [error]:'out of Range'
+              }));
+              return false;
+            }
+            return true
+  
+          }
+          case isMinDescritpion:{
+            if (fieldValidater(form[fieldKey])) {
+              setValues(prevState => ({
+                ...prevState,
+                [fieldErrorKey]: true,
+                [error]:'Minimun  30  characters'
+              }));
+              return false;
+            }
+            return true
+  
+          }
+          case isNonEmptyString:{
+            if (!fieldValidater(form[fieldKey])) {
+              setValues(prevState => ({
+                ...prevState,
+                [fieldErrorKey]: true,
+                [error]:'mandatory field'
+              }));
+              return false;
+            }
+            return true
+  
+          }
+        
+          
+  
+        }   
+    
   
     }
     const checkvalidation=()=>{
-      let isValid=true
+      let isValid = true;
+    isValid =  isValid   && checkField('productName', 'incorrectProductName', isNonEmptyString,'productNameError');
+     isValid =  isValid  &&  checkField('productName','incorrectProductName',isMinLengthName,'productNameError')
+     isValid =  isValid  && checkField('price', 'incorrectPrice', isNonEmptyString,'priceError');
+      isValid =  isValid  && checkField('price', 'incorrectPrice', isPriceRange,'priceError');
+    
+       
+      isValid = isValid && checkField('discount', 'incorrectDiscount', isNonEmptyString);
+      isValid =isValid &&
+        checkField('highlights', 'incorrectHightlights', isNonEmptyString,'highlightsError');
+        isValid =
+       isValid &&
+        checkField('highlights', 'incorrectHightlights', isMinDescritpion,'highlightsError');
+   
+      isValid =
+        isValid && checkField('width', 'incorrectwidth', isNonEmptyString,'widthError');
+        isValid=isValid && checkField('width','incorrectwidth',isWidth,'widthError')  
+              
+      isValid =
+        isValid && checkField('height', 'incorrectheight', isNonEmptyString,'heightError');
+        isValid=isValid && checkField('width','incorrectwidth',isWidth,'heightError') 
+      isValid =
+       isValid && checkField('length', 'incorrectLength', isNonEmptyString,'lenghtError');
+        isValid =
+        isValid && checkField('length', 'incorrectLength', isWidth,'lenghtError');
+      isValid =
+       isValid &&
+        checkField('description', 'incorrectDescription', isNonEmptyString,'descriptionError');
+        isValid =
+        isValid &&
+        checkField('description', 'incorrectDescription', isMinDescritpion,'descriptionError');
+    
+     isValid =
+       isValid && checkField('weight', 'incorrectweight', isNonEmptyString);
+      isValid =
+        isValid && checkField('stock', 'incorrectStock', isNonEmptyString);
+   if (!form.taxIncluded) {
+        isValid =
+          isValid && checkField('taxes', 'incorrectTaxes', isNonEmptyString);
+      }
+  
+      return isValid;
+    
+  /*    let isValid=true
 
        isValid=isValid  &&   checkField('productName','incorrectProductName',isNonEmptyString)
        isValid=isValid  &&   checkField('price','incorrectPrice',isNonEmptyString)
@@ -306,7 +429,7 @@ const EditProduct =({navigation,route})=>{
         isValid=isValid  &&   checkField('taxes','incorrectTaxes',isNonEmptyString)
        }
     
-       return isValid
+       return isValid*/
       }
     
     useEffect(()=>{
@@ -584,6 +707,7 @@ console.warn(error);
 const updateProduct = () => {
    Keyboard.dismiss()
    if(!checkvalidation()){
+     console.log('inide')
     return
   }
  // if(!form.productName.match(/^[0-9a-z]+$/) || !form.highlights.match(/^[0-9a-z]+$/)){
@@ -648,19 +772,14 @@ const updateProduct = () => {
                console.log(responseJson);
                if(responseJson.Message){
                  setLoading(false)
-                 if(Platform.OS!=='ios'){}
+                
                 Object.entries(responseJson.ModelState).forEach(([key, value]) => {
                   console.log(`${key}: ${value}`)
-                  if(Platform.OS!=='ios'){
-                    ToastAndroid.showWithGravity(
-                      value.toString()  + ' ' +   'at'  + ' ' +   key,
-                    ToastAndroid.SHORT, //can be SHORT, LONG
-                    ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                  );
-                  }else{
-                    alert(value.toString()  + ' ' +   'at'  + ' ' +   key,
-                    )
-                  }
+                  RNToasty.Warn({
+                    title: value.toString()  + ' ' +   'at'  + ' ' +   key,
+                    position:'center'
+                  })
+                 
                   
                   
               });
@@ -671,17 +790,12 @@ const updateProduct = () => {
                 }
                 else{
                   setLoading(false)
+                  RNToasty.Success({
+                    title:responseJson,
+                    position:'center'
+                  },5000)
               //    setLoading(false)
-              if(Platform.OS!=='ios'){
-                ToastAndroid.showWithGravity(
-                  responseJson,
-                  ToastAndroid.SHORT, //can be SHORT, LONG
-                  ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                );
-               
-              }else{
-                alert(responseJson)
-              }
+             
               navigation.navigate('ManageProducts')
               }
               
@@ -908,7 +1022,8 @@ const searchFilterFunctionC = (text) => {
           <InputText
              label='Product Name'
              labelStyle={''}
-            autoCorrect={false}
+             maxLength={100}
+             autoCorrect={false}
            // placeholder={'Product Name'}
            // placeholderTextColor={colors.colors.gray400}
             value={form.productName}
@@ -922,8 +1037,17 @@ const searchFilterFunctionC = (text) => {
 
        
      
-        errorMessage={form.incorrectProductName?'MandatoryField':""}
-        onBlur={()=>checkField('productName','incorrectProductName',isNonEmptyString)}
+        errorMessage={form.incorrectProductName?form.productNameError:""}
+        onBlur={()=>{checkField('productName','incorrectProductName',isNonEmptyString,
+        'productNameError'
+        )
+        checkField(
+          'productName',
+          'incorrectProductName',
+          isMinLengthName,
+          'productNameError'
+        )
+      }}
   // containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
             containerStyle={styles.containerStyle}
           />
@@ -961,10 +1085,14 @@ const searchFilterFunctionC = (text) => {
             underlineColorAndroid={colors.colors.transparent}
             // containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
             containerStyle={styles.containerStyle}
-            errorMessage={form.incorrectPrice ? 'MandatoryField' : ''}
-            onBlur={() =>
-              checkField('price', 'incorrectPrice', isNonEmptyString)
+            errorMessage={form.incorrectPrice ? form.priceError : ''}
+            onBlur={() =>{
+              checkField('price','incorrectPrice',isNonEmptyString,'priceError')
+              checkField('price','incorrectPrice',isPriceRange,'priceError')                    
+            }            
             }
+          
+          
           />
           <InputText
              value={(form.taxIncluded) ? 0:form.taxes}
@@ -1068,9 +1196,14 @@ const searchFilterFunctionC = (text) => {
        )}
        underlineColorAndroid = {colors.colors.primary}
 
-       errorMessage={form.incorrectwidth?'MandatoryField':""}
-       onBlur={()=>checkField('width','incorrectwidth',isNonEmptyString)}
-
+       errorMessage={form.incorrectwidth ? form.widthError : ''}
+       onBlur={() =>{
+        checkField('width','incorrectwidth',isNonEmptyString,'widthError')  
+        checkField('width','incorrectwidth',isWidth,'widthError')  
+        
+      }
+      }
+    
            
             keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
@@ -1096,9 +1229,15 @@ const searchFilterFunctionC = (text) => {
        )}
        underlineColorAndroid = {colors.colors.transparent}
 
-       errorMessage={form.incorrectheight?'MandatoryField':""}
-       onBlur={()=>checkField('height','incorrectheight',isNonEmptyString)}
-
+       errorMessage={form.incorrectheight ?form.heightError : ''}
+       onBlur={() =>
+        {
+        checkField('height','incorrectheight',isNonEmptyString,'heightError')
+        checkField('height','incorrectheight',isWidth,'heightError')  
+       
+        }
+      }
+    
             //containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
           />
         </View>
@@ -1120,9 +1259,16 @@ const searchFilterFunctionC = (text) => {
             )}
             underlineColorAndroid = {colors.colors.transparent}
 
-            errorMessage={form.incorrectLength?'MandatoryField':""}
-            onBlur={()=>checkField('length','incorrectLength',isNonEmptyString)}
-    
+            errorMessage={form.incorrectLength ? form.lenghtError : ''}
+            onBlur={() =>{
+              checkField('length', 'incorrectLength', isNonEmptyString,'lenghtError')
+              checkField('length', 'incorrectLength', isWidth,'lenghtError')
+            
+             
+            }
+              
+            }
+          
           />
           <InputText
              label='Discount(%)'
@@ -1141,8 +1287,19 @@ const searchFilterFunctionC = (text) => {
               incorrectDiscount:false
         })
         )}
-        errorMessage={form.incorrectDiscount?'MandatoryField':""}
-        onBlur={()=>checkField('discount','incorrectDiscount',isNonEmptyString)}
+        errorMessage={form.incorrectDiscount?form.discountError:""}
+        onBlur={()=>{
+          checkField('discount', 'incorrectDiscount', isNonEmptyString,'discountError')
+              if(form.discount!==''&& form.discount>=90){
+            setValues(prevState => ({
+              ...prevState,
+              incorrectDiscount: true,
+              discountError:'out of range'
+            }));
+
+          
+        }
+        }}
   keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
           />
@@ -1197,12 +1354,22 @@ const searchFilterFunctionC = (text) => {
      
      <RichEditor
      initialContentHTML={decode(form.description)}
-     onBlur={() =>
-       checkField(
-         'description',
-         'incorrectDescription',
-         isNonEmptyString,
-       )}
+     onBlur={() =>{
+      checkField(
+        'description',
+        'incorrectDescription',
+        isNonEmptyString,
+        'descriptionError'
+
+      )
+      checkField(
+        'description',
+        'incorrectDescription',
+        isMinDescritpion,
+        'descriptionError'
+        
+      )
+    }}
      disabled={false}
     containerStyle={styles.rich}
      ref={RichText}
@@ -1243,7 +1410,7 @@ const searchFilterFunctionC = (text) => {
     // insertVideo={insertVideo}
    />
   {form.incorrectDescription && (
-      <Text type='body' style={styles.error}>{'Mandatory field'}</Text>
+      <Text type='body' style={styles.error}>{form.descriptionError}</Text>
    )}
   
    {/*
@@ -1279,10 +1446,13 @@ const searchFilterFunctionC = (text) => {
      <RichEditor
       initialContentHTML={decode(form.highlights)}
    
-       onBlur={() =>
-         checkField('highlights', 'incorrectHightlights', isNonEmptyString)
-       }
-     disabled={false}
+      onBlur={() =>{
+        checkField('highlights', 'incorrectHightlights', isNonEmptyString,'highlightsError')
+        checkField('highlights', 'incorrectHightlights', isMinDescritpion,'highlightsError')
+      
+      }
+      }
+  disabled={false}
     containerStyle={styles.rich}
      ref={highlightsref}
     // style={styles.containerStyle}
@@ -1323,7 +1493,7 @@ const searchFilterFunctionC = (text) => {
     // insertVideo={insertVideo}
    />
   {form.incorrectHightlights && (
-      <Text type='body' style={styles.error}>{'Mandatory field'}</Text>
+      <Text type='body' style={styles.error}>{form.highlightsError}</Text>
    )}
   {/*
    <InputText

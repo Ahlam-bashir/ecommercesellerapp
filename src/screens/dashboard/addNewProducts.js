@@ -20,11 +20,12 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {encode} from 'base-64';
 import AsyncStorage from '@react-native-community/async-storage';
 import {UserContext} from '../../common/context/userContext';
-import {isNonEmptyString} from '../../utils';
+import {isMinDescritpion, isMinLengthName, isNonEmptyString, isPriceRange, isWidth} from '../../utils';
 import Country from '../../constants/data/country.json';
 import {BASE_URL} from '../../constants/matcher';
 import HandmadePercent from '../../common/picker/HandmadePercent';
 import { RichEditor, RichToolbar,actions,defaultActions } from 'react-native-pell-rich-editor';
+import { RNToasty } from 'react-native-toasty';
 const height=70
 const addNewProducts = ({navigation}) => {
   const [filteredDataSource, setFilteredDataSource] = useState([]);
@@ -47,22 +48,32 @@ const addNewProducts = ({navigation}) => {
   const [form, setValues] = useState({
     productName: '',
     incorrectProductName: false,
+    productNameError:'',
     price: '',
     incorrectPrice: false,
+    priceError:'',
     taxes: '',
     incorrectTaxes: false,
+    taxError:'',
     width: '',
     incorrectwidth: false,
+    widthError:'',
     height: '',
     incorrectheight: false,
+    heightError:'',
     length: '',
     incorrectLength: false,
+    lenghtError:'',
     description: '',
     incorrectDescription: false,
+
+    descriptionError:'',
     weight: '',
     incorrectweight: false,
+    weightError:'',
     stock: '',
     incorrectStock: false,
+    stockError:'',
     countryId: '',
     stateId: '',
     dcountryId: '',
@@ -75,9 +86,11 @@ const addNewProducts = ({navigation}) => {
     taxIncluded: false,
     deliveryIncluded: false,
     discount: '',
+    discountError:'',
     incorrectDiscount: false,
     highlights: '',
     incorrectHightlights: false,
+    highlightsError:'',
     handmadePercent: 'Handmade %',
     isGITagged: false,
     incorrectCategory: false,
@@ -124,16 +137,83 @@ const addNewProducts = ({navigation}) => {
         console.warn(error);
       });
   }, [sku]);
-  const checkField = (fieldKey, fieldErrorKey, fieldValidater) => {
-    console.log('blur')
-    if (!fieldValidater(form[fieldKey])) {
+  const checkField = (fieldKey, fieldErrorKey, fieldValidater,error) => {
+    if(!isNonEmptyString(form[fieldKey])){
       setValues(prevState => ({
         ...prevState,
         [fieldErrorKey]: true,
+        [error]:'Mandatory field'
       }));
       return false;
-    }
-    return true;
+      
+     }  
+    
+     switch(fieldValidater)
+     {
+       case isMinLengthName:
+         
+         if (!fieldValidater(form[fieldKey])) {
+          setValues(prevState => ({
+            ...prevState,
+            [fieldErrorKey]: true,
+            [error]:'Minimun  3  characters'
+          }));
+          return false;
+        }
+        return true
+        case isPriceRange:{
+          if (fieldValidater(form[fieldKey])) {
+            setValues(prevState => ({
+              ...prevState,
+              [fieldErrorKey]: true,
+              [error]:'out of Range'
+            }));
+            return false;
+          }
+          return true
+
+        }
+        case isWidth:{
+          if (fieldValidater(form[fieldKey])) {
+            setValues(prevState => ({
+              ...prevState,
+              [fieldErrorKey]: true,
+              [error]:'out of Range'
+            }));
+            return false;
+          }
+          return true
+
+        }
+        case isMinDescritpion:{
+          if (fieldValidater(form[fieldKey])) {
+            setValues(prevState => ({
+              ...prevState,
+              [fieldErrorKey]: true,
+              [error]:'Minimun  30  characters'
+            }));
+            return false;
+          }
+          return true
+
+        }
+        case isNonEmptyString:{
+          if (!fieldValidater(form[fieldKey])) {
+            setValues(prevState => ({
+              ...prevState,
+              [fieldErrorKey]: true,
+              [error]:'Mandatory field'
+            }));
+            return false;
+          }
+          return true
+
+        }
+      
+        
+
+      }   
+    
   };
   const categoryList = () => {
     setModalVisible(true);
@@ -279,6 +359,7 @@ const addNewProducts = ({navigation}) => {
       });
   };
   const onChange = item => {
+    setSearch('')
     setModalVisible(false);
     if (item.categoryName) {
       setTextValue(item.categoryName);
@@ -317,6 +398,7 @@ const addNewProducts = ({navigation}) => {
     console.log(item);
   };
   const onChangeC = item => {
+    setSearch('')
     setModalVisible2(false);
     if (item.countryName) {
       setValues(prev => ({
@@ -338,25 +420,39 @@ const addNewProducts = ({navigation}) => {
   };
   const checkvalidation = () => {
     let isValid = true;
-    isValid =
-      isValid &&
-      checkField('productName', 'incorrectProductName', isNonEmptyString);
-    isValid =
-      isValid && checkField('price', 'incorrectPrice', isNonEmptyString);
+    isValid =  isValid   && checkField('productName', 'incorrectProductName', isNonEmptyString,'productNameError');
+    isValid =  isValid  &&  checkField('productName','incorrectProductName',isMinLengthName,'productNameError')
+    isValid =  isValid  && checkField('price', 'incorrectPrice', isNonEmptyString,'priceError');
+    isValid =  isValid  && checkField('price', 'incorrectPrice', isPriceRange,'priceError');
+  
+     
     isValid =
       isValid && checkField('discount', 'incorrectDiscount', isNonEmptyString);
     isValid =
       isValid &&
-      checkField('highlights', 'incorrectHightlights', isNonEmptyString);
+      checkField('highlights', 'incorrectHightlights', isNonEmptyString,'highlightsError');
+      isValid =
+      isValid &&
+      checkField('highlights', 'incorrectHightlights', isMinDescritpion,'highlightsError');
+ 
     isValid =
-      isValid && checkField('width', 'incorrectwidth', isNonEmptyString);
+      isValid && checkField('width', 'incorrectwidth', isNonEmptyString,'widthError');
+      isValid=isValid && checkField('width','incorrectwidth',isWidth,'widthError')  
+            
     isValid =
-      isValid && checkField('height', 'incorrectheight', isNonEmptyString);
+      isValid && checkField('height', 'incorrectheight', isNonEmptyString,'heightError');
+      isValid=isValid && checkField('width','incorrectwidth',isWidth,'heightError') 
     isValid =
-      isValid && checkField('length', 'incorrectLength', isNonEmptyString);
+      isValid && checkField('length', 'incorrectLength', isNonEmptyString,'lenghtError');
+      isValid =
+      isValid && checkField('length', 'incorrectLength', isWidth,'lenghtError');
     isValid =
       isValid &&
-      checkField('description', 'incorrectDescription', isNonEmptyString);
+      checkField('description', 'incorrectDescription', isNonEmptyString,'descriptionError');
+      isValid =
+      isValid &&
+      checkField('description', 'incorrectDescription', isMinDescritpion,'descriptionError');
+  
     isValid =
       isValid && checkField('weight', 'incorrectweight', isNonEmptyString);
     isValid =
@@ -382,15 +478,11 @@ const addNewProducts = ({navigation}) => {
       textValue === 'Select Category' ||
       form.handmadePercent === 'Handmade %'
     ) {
-      if (Platform.OS !== 'ios') {
-        ToastAndroid.showWithGravity(
-          'All fields are mandatory',
-          ToastAndroid.SHORT, //can be SHORT, LONG
-          ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-        );
-      } else {
-        alert('All fields are mandatory');
-      }
+      RNToasty.Error({
+        title:'All fields are mandatory',
+        position:'center'
+      })
+     
       return;
     }
     //    if( !form.description.match(/^[0-9a-z]+$/) || !form.highlights.match(/^[0-9a-z]+$/)){
@@ -446,15 +538,11 @@ const addNewProducts = ({navigation}) => {
             console.log(responseJson);
             setLoading(false);
             if (responseJson.status) {
-              if (Platform.OS !== 'ios') {
-                ToastAndroid.showWithGravity(
-                  responseJson.status,
-                  ToastAndroid.SHORT, //can be SHORT, LONG
-                  ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                );
-              } else {
-                alert(responseJson.status);
-              }
+              RNToasty.Success({
+                title: responseJson.status,
+                position:'center'
+              },5000)
+             
 
               navigation.navigate('Add product Images', {
                 seller: responseJson.data.sellerId,
@@ -465,15 +553,10 @@ const addNewProducts = ({navigation}) => {
               Object.entries(responseJson.ModelState).forEach(
                 ([key, value]) => {
                   console.log(`${key}: ${value}`);
-                  if (Platform.OS !== 'ios') {
-                    ToastAndroid.showWithGravity(
-                      value.toString() + ' ' + 'at' + ' ' + key,
-                      ToastAndroid.SHORT, //can be SHORT, LONG
-                      ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                    );
-                  } else {
-                    alert(value.toString() + ' ' + 'at' + ' ' + key);
-                  }
+                  RNToasty.Error({
+                    title: value.toString() + ' ' + 'at' + ' ' + key,
+                    position:'center'
+                  })
                 },
               );
 
@@ -734,6 +817,7 @@ const addNewProducts = ({navigation}) => {
               label='Product Name'
              labelStyle={''}
             autoCorrect={false}
+            maxLength={100}
           //  placeholder={'Product Name'}
             placeholderTextColor={colors.colors.gray400}
             onChangeText={value =>
@@ -744,13 +828,22 @@ const addNewProducts = ({navigation}) => {
               }))
             }
             underlineColorAndroid={colors.colors.transparent}
-            errorMessage={form.incorrectProductName ? 'MandatoryField' : ''}
-            onBlur={() =>
+            errorMessage={form.incorrectProductName ? form.productNameError: ''}
+            onBlur={() =>{
+             
               checkField(
                 'productName',
                 'incorrectProductName',
                 isNonEmptyString,
+                'productNameError'
               )
+              checkField(
+                'productName',
+                'incorrectProductName',
+                isMinLengthName,
+                'productNameError'
+              )
+            }
             }
             // containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
             containerStyle={styles.containerStyle}
@@ -788,9 +881,11 @@ const addNewProducts = ({navigation}) => {
             underlineColorAndroid={colors.colors.transparent}
             // containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
             containerStyle={styles.containerStyle}
-            errorMessage={form.incorrectPrice ? 'MandatoryField' : ''}
-            onBlur={() =>
-              checkField('price', 'incorrectPrice', isNonEmptyString)
+            errorMessage={form.incorrectPrice ? form.priceError : ''}
+            onBlur={() =>{
+              checkField('price', 'incorrectPrice', isNonEmptyString,'priceError')
+              checkField('price', 'incorrectPrice', isPriceRange,'priceError')                    
+            }            
             }
           />
           <InputText
@@ -892,15 +987,18 @@ const addNewProducts = ({navigation}) => {
             onChangeText={value =>
               setValues(prevState => ({
                 ...prevState,
-                width: value.trim(),
+                 width: value.trim(),
                 incorrectwidth: false,
               }))
             }
             //  containerStyle={Platform.OS!=='android'? {...styles.defaultMargin,marginRight:6}:null}
             containerStyle={styles.containerStyle}
-            errorMessage={form.incorrectwidth ? 'MandatoryField' : ''}
-            onBlur={() =>
-              checkField('width', 'incorrectwidth', isNonEmptyString)
+            errorMessage={form.incorrectwidth ? form.widthError : ''}
+            onBlur={() =>{
+              checkField('width','incorrectwidth',isNonEmptyString,'widthError')  
+              checkField('width','incorrectwidth',isWidth,'widthError')  
+              
+            }
             }
             underlineColorAndroid={colors.colors.transparent}
           />
@@ -920,9 +1018,13 @@ const addNewProducts = ({navigation}) => {
                 incorrectheight: false,
               }))
             }
-            errorMessage={form.incorrectheight ? 'MandatoryField' : ''}
+            errorMessage={form.incorrectheight ?form.heightError : ''}
             onBlur={() =>
-              checkField('height', 'incorrectheight', isNonEmptyString)
+              {
+              checkField('height','incorrectheight',isNonEmptyString,'heightError')
+              checkField('height','incorrectheight',isWidth,'heightError')  
+             
+              }
             }
             keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
@@ -944,9 +1046,14 @@ const addNewProducts = ({navigation}) => {
                 incorrectLength: false,
               }))
             }
-            errorMessage={form.incorrectLength ? 'MandatoryField' : ''}
-            onBlur={() =>
-              checkField('length', 'incorrectLength', isNonEmptyString)
+            errorMessage={form.incorrectLength ? form.lenghtError : ''}
+            onBlur={() =>{
+              checkField('length', 'incorrectLength', isNonEmptyString,'lenghtError')
+              checkField('length', 'incorrectLength', isWidth,'lenghtError')
+            
+             
+            }
+              
             }
             keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
@@ -954,6 +1061,7 @@ const addNewProducts = ({navigation}) => {
           <InputText
              label='Discount(%)'
              labelStyle={''}
+             maxLength={3}
          //    placeholder={'Discount(%)'}
           //  placeholderTextColor={colors.colors.gray400}
             autoCorrect={false}
@@ -967,9 +1075,22 @@ const addNewProducts = ({navigation}) => {
                 incorrectDiscount: false,
               }))
             }
-            errorMessage={form.incorrectDiscount ? 'MandatoryField' : ''}
-            onBlur={() =>
-              checkField('discount', 'incorrectDiscount', isNonEmptyString)
+            errorMessage={form.incorrectDiscount ? form.discountError: ''}
+            onBlur={() =>{
+              checkField('discount', 'incorrectDiscount', isNonEmptyString,'discountError')
+              if(form.discount!==''&& form.discount>=90){
+                setValues(prevState => ({
+                  ...prevState,
+                  incorrectDiscount: true,
+                  discountError:'out of range'
+                }));
+    
+              
+            }
+              
+            }
+              
+            
             }
             keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
@@ -989,7 +1110,7 @@ const addNewProducts = ({navigation}) => {
               incorrectStock:false
         })
         )}
-        errorMessage={form.incorrectStock?'MandatoryField':""}
+        errorMessage={form.incorrectStock?'Mandatory Field':""}
         onBlur={()=>checkField('stock','incorrectStock',isNonEmptyString)}
             keyboardType="number-pad"
             underlineColorAndroid={colors.colors.transparent}
@@ -1009,7 +1130,7 @@ const addNewProducts = ({navigation}) => {
               incorrectweight:false
         })
         )}
-          errorMessage={form.incorrectweight?'MandatoryField':""}
+          errorMessage={form.incorrectweight?'Mandatory Field':""}
           onBlur={()=>checkField('weight','incorrectweight',isNonEmptyString)}
        
             keyboardType="number-pad"
@@ -1020,12 +1141,23 @@ const addNewProducts = ({navigation}) => {
         <View style={{...styles.container,borderWidth:1,borderColor:colors.colors.primaryLight,marginTop:4,borderRadius:4}}>
      
         <RichEditor
-        onBlur={() =>
+        onBlur={() =>{
           checkField(
             'description',
             'incorrectDescription',
             isNonEmptyString,
-          )}
+            'descriptionError'
+
+          )
+          checkField(
+            'description',
+            'incorrectDescription',
+            isMinDescritpion,
+            'descriptionError'
+            
+          )
+        }}
+        
         disabled={false}
        containerStyle={styles.rich}
         ref={RichText}
@@ -1044,6 +1176,7 @@ const addNewProducts = ({navigation}) => {
         style={[styles.richBar]}
         editor={RichText}
         disabled={false}
+        maxLength={5000}
         iconTint={colors.colors.primary}
         selectedIconTint={colors.colors.black}
         disabledIconTint={colors.colors.disabled}
@@ -1066,7 +1199,7 @@ const addNewProducts = ({navigation}) => {
         //insertVideo={insertVideo}
       />
      {form.incorrectDescription && (
-         <Text type='body' style={styles.error}>{'Mandatory field'}</Text>
+         <Text type='body' style={styles.error}>{form.descriptionError}</Text>
       )}
      
       {/*
@@ -1101,12 +1234,16 @@ const addNewProducts = ({navigation}) => {
         <View style={{...styles.container,borderWidth:1,borderColor:colors.colors.primaryLight,marginTop:4,borderRadius: 4,}}>
         <RichEditor
       
-          onBlur={() =>
-            checkField('highlights', 'incorrectHightlights', isNonEmptyString)
+          onBlur={() =>{
+            checkField('highlights', 'incorrectHightlights', isNonEmptyString,'highlightsError')
+            checkField('highlights', 'incorrectHightlights', isMinDescritpion,'highlightsError')
+          
+          }
           }
         disabled={false}
        containerStyle={styles.rich}
         ref={highlightsref}
+        maxLength={2000}
        // style={styles.containerStyle}
         placeholder={"Write Highlights here"}
         onChange={value =>
@@ -1145,7 +1282,7 @@ const addNewProducts = ({navigation}) => {
        // insertVideo={insertVideo}
       />
      {form.incorrectHightlights && (
-         <Text type='body' style={styles.error}>{'Mandatory field'}</Text>
+         <Text type='body' style={styles.error}>{form.highlightsError}</Text>
       )}
      {/*
       <InputText

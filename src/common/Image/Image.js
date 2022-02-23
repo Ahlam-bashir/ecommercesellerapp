@@ -65,7 +65,7 @@ const ImageComponent=(props)=>{
 
 
 
-    },[])
+    },[props])
     return(
         <View>
             <Image

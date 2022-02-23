@@ -17,6 +17,7 @@ import {encode} from 'base-64';
 import {loadSeller} from '../../utils/storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import {BASE_URL} from '../../constants/matcher';
+import { RNToasty } from 'react-native-toasty';
 
 const ManageProducts = ({navigation, route}) => {
   // console.log('route'+navigation.params)
@@ -42,16 +43,19 @@ const ManageProducts = ({navigation, route}) => {
       console.log('indicaor' + !indicator);
       console.log('is' + !isListend);
       console.log(offset);
+      setProductData([])
+      
+      setoffset(1)
       manage();
     });
     return unsubscribe;
-  }, [refresh, navigation]);
+  }, [navigation]);
   const manage = async() => {
     console.log('ind' + !indicator);
     console.log('list' + !isListend);
     if (!indicator && !isListend) {
       setindicator(true);
-      setLoading(true);
+      //setLoading(true);
 
     await  AsyncStorage.getAllKeys().then(keyArray => {
         AsyncStorage.multiGet(keyArray).then(keyValArray => {
@@ -102,15 +106,11 @@ const ManageProducts = ({navigation, route}) => {
                 setLoading(false);
                 setindicator(false);
                 setIslistEnd(true);
-                if (Platform.OS !== 'ios') {
-                  ToastAndroid.showWithGravity(
-                    'No Products found please add products',
-                    ToastAndroid.SHORT, //can be SHORT, LONG
-                    ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                  );
-                } else {
-                  alert('No Products Found');
-                }
+                RNToasty.Warn({
+                  title:'No Products found please add products',
+                  position:'center'
+                })
+               
               }
             })
             .catch(error => {
@@ -166,11 +166,82 @@ const ManageProducts = ({navigation, route}) => {
                   .then(response => response.json())
                   .then(responseJson => {
                     setLoading(false);
+                    productData.filter(item=>item.id!==id)
+                    fetch(
+                      BASE_URL +
+                        'SellerProducts/?sellerId=' +
+                        myStorage.sellerId +
+                        '&page=' +
+                        1,
+                      {
+                        method: 'GET',
+                        headers: {
+                          Accept: 'application/json',
+                          'Content-Type': 'application/json',
+                          Authorization:
+                            'Basic ' + encode(myStorage.email + ':' + myStorage.password),
+                        },
+                      },
+                    )
+                      .then(response => response.json())
+                      .then(responseJson => {
+                        //setLoading(false)
+                        console.log(responseJson);
+                        //Showing response message coming from server
+                      //  console.log(responseJson.length);
+                        if(responseJson==null){
+                          setLoading(false);
+                          setindicator(false);
+                          alert('no products found' )
+                          return
+          
+                        }
+                        if (responseJson.length > 0) {
+                          setLoading(false);
+                          setindicator(false);
+                         // setoffset(offset + 1);
+                          setProductData(responseJson);
+                         
+          
+                          console.log(offset);
+                        } else {
+                          setLoading(false);
+                          setindicator(false);
+                        //  setIslistEnd(true);
+                          if (Platform.OS !== 'ios') {
+                            ToastAndroid.showWithGravity(
+                              'No Products found please add products',
+                              ToastAndroid.SHORT, //can be SHORT, LONG
+                              ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
+                            );
+                          } else {
+                            alert('No Products Found');
+                          }
+                        }
+                      })
+                      .catch(error => {
+                        //setLoading(false)
+                        //display error message
+                        setindicator(false);
+                        setLoading(false);
+                        ToastAndroid.showWithGravity(
+                          error.toString(),
+                          ToastAndroid.SHORT, //can be SHORT, LONG
+                          ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
+                        );
+          
+                        console.warn(error);
+                      });
+                 RNToasty.Success({
+                   title:responseJson,
+                   position:'center'
+                 })
+                   
+                   
 
-                    alert(responseJson);
-                    setProductData(
-                      productData.slice().filter(item => item.id !== id),
-                    );
+                    
+                   
+                //    setProductData(     productData.filter(item => item.id !== id),);
                     //setRefresh(true)
 
                     //setLoading(false)
@@ -290,7 +361,7 @@ const ManageProducts = ({navigation, route}) => {
                     <Text type="heading" style={styles.text}>
                       {itemData.item.SKU}
                     </Text>
-                    <Text type="body" style={styles.text}>
+                    <Text type="body" style={{...styles.text,width:200}}>
                       Product name: {itemData.item.name}
                     </Text>
                     <View style={{flexDirection:'row'}}>

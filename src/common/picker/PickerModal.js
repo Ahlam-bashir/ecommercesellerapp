@@ -7,23 +7,13 @@ import { Picker } from '@react-native-community/picker';
 import Icon from '../Icon/Icon';
 import { BottomSheet } from 'react-native-btr';
 import Loader from '../indicator/Loader';
+import { KeyboardAvoidingView } from 'react-native';
 const PickerModal = (props) =>{
     console.log(props.onClose)
     const items = ['Apples','oranges']
     const ListHeader = () => {
         //View to set in Header
-        return (
-          <View style={styles.headerFooterStyle}>
-            <TextInput
-            style={styles.textInputStyle}
-            onChangeText={(text) => props.searchFilterFunction(text)}
-            value={props.searchText}
-            underlineColorAndroid="transparent"
-            placeholder="Search Here"
-        />
-           
-          </View>
-        );
+      
       };
      return(
         <BottomSheet 
@@ -32,8 +22,10 @@ const PickerModal = (props) =>{
         onBackButtonPress={props.onClose}
         //Toggling the visibility state
         onBackdropPress={props.onClose}
+        
        >
-            <View style={styles.mainContainer}>
+            <View style={styles.mainContainer} >
+            
             <View style={styles.pickerContainer}>
             <View style={styles.header}> 
             <View style={{width:'86%',alignItems:'center'}}>  
@@ -44,11 +36,33 @@ const PickerModal = (props) =>{
             </TouchableOpacity>            
             </View>
             <Loader  loading={props.loading}/>
-            <ListHeader/>
-            <FlatList
-               contentContainerStyle={{alignItems:'center'}}
-               numColumns={2}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : null}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
               
+               >
+                     <View style={styles.headerFooterStyle}
+          
+          >
+            <TextInput
+            keyboardType={'default'}
+            style={styles.textInputStyle}
+            onChangeText={(text) => props.searchFilterFunction(text)}
+            value={props.searchText}
+            underlineColorAndroid="transparent"
+            placeholder="Search Here"
+        />
+           
+          </View>
+      
+           
+            <FlatList
+            
+           
+            
+           
+               contentContainerStyle={{alignItems:'center'}}
+               numColumns={2}        
                data={props.item}
                keyExtractor={(id,index)=>index.toString()}
                renderItem={(itemData)=>{
@@ -61,8 +75,10 @@ const PickerModal = (props) =>{
                     </TouchableOpacity>       
                 )
                }}
-             />   
+             />  
+             </KeyboardAvoidingView> 
         </View>
+      
         </View>
         </BottomSheet>
      )

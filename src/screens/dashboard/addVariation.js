@@ -3,12 +3,13 @@ import {View,StyleSheet,Platform,TouchableOpacity, Keyboard, ScrollView} from 'r
 import DropDownPicker from 'react-native-dropdown-picker'
 import { Text,Icon,InputText,Loader, VariationPicker } from '../../common'
 import { DIMENS, TYPOGRAPHY } from '../../constants'
-import { isNonEmptyString } from '../../utils'
+import { isNonEmptyString, isPriceRange } from '../../utils'
 import { colors } from '../../theme'
 import { BASE_URL } from '../../constants/matcher'
 import AsyncStorage from '@react-native-community/async-storage'
 import { encode } from 'base-64'
 import {launchImageLibrary} from 'react-native-image-picker';
+import { RNToasty } from 'react-native-toasty'
 
 const addVariation =({navigation,route})=>{
     console.log(route.params)
@@ -35,6 +36,7 @@ const addVariation =({navigation,route})=>{
     const [form,setform]= useState({
         price:'',
         incorrectPrice:false,
+        priceError:'',
         stock:'',
         incorrectStock:false,
         extraInfo:'',
@@ -82,12 +84,19 @@ const addVariation =({navigation,route})=>{
            }));
            return false;
       }
+          
+     
       return true;
   
     }
     const variationValueList=()=>{
         if(text=='Select Variation'){
-            alert('Select Variation')
+          RNToasty.Warn({
+            title:'Select Variation',
+            position:'center'
+          })
+          
+        
             return
 
         }
@@ -119,17 +128,16 @@ const addVariation =({navigation,route})=>{
                   //setLoading(false)
                 //display error message
                 setLoading(false)
-                if(Platform.OS!=='ios'){
-                  ToastAndroid.showWithGravity(
-                    error.toString(),
-                    ToastAndroid.SHORT, //can be SHORT, LONG
-                    ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                  );
               
-                }
-                else{
-                  alert(error.toString())
-                }
+                
+            
+              
+                  RNToasty.Error({
+                    title:error.toString(),
+                    position:'bottom'
+                  })
+                 
+             
                 
                  console.warn(error);
                 });
@@ -154,7 +162,11 @@ const addVariation =({navigation,route})=>{
           return
         }
         if(value==='--Select--' || text==='Select Variation type'){
-          alert('Select variation')
+          RNToasty.Warn({
+            title:'Select variation',
+            position:'center'
+          })
+         
           return
 
         }
@@ -195,6 +207,12 @@ const addVariation =({navigation,route})=>{
               
               if(responseJson.extra.split(':')[0]==='Color'){
                 navigation.navigate('Variation Images',{'info':responseJson.extra,'sellerId':myStorage.sellerId,'productId':id})
+
+              }else if(responseJson.extra.split(':')[0]==='Size'){
+                RNToasty.Success({
+                  title:'variation added successfully',
+                  position:'center'
+                })
 
               }
 
@@ -256,7 +274,7 @@ const addVariation =({navigation,route})=>{
         </TouchableOpacity>
         
       
-    <InputText
+               <InputText
                 main={{flex:0}}
                 label='Price($)'
                 labelStyle={''}
@@ -269,11 +287,27 @@ const addVariation =({navigation,route})=>{
                   incorrectPrice:false
             })
             )}
-            underlineColorAndroid = {colors.colors.transparent}
+            underlineColorAndroid = {colors.colors.transparent}   
+            errorMessage={form.incorrectPrice?form.priceError:""}
+            onBlur={()=>{
+              if(!isNonEmptyString(form.price)){
+                setform(prevState=>({
+                  ...prevState,
+                  priceError:'mandatory field',
+                 
+                  incorrectPrice:true
+            }))
+          }else if(isNonEmptyString(form.price) && isPriceRange(form.price)){
+            setform(prevState=>({
+              ...prevState,
+              priceError:'out of range',
+             
+              incorrectPrice:true
 
-           
-            errorMessage={form.incorrectPrice?'MandatoryField':""}
-            onBlur={()=>checkField('price','incorrectPrice',isNonEmptyString)}
+          }))
+
+              
+            }}}
     
          
             />
@@ -294,7 +328,7 @@ const addVariation =({navigation,route})=>{
 
             containerStyle={styles.containerStyle}
             errorMessage={form.incorrectStock?'MandatoryField':""}
-            onBlur={()=>checkField('stock',' incorrectStock',isNonEmptyString)}
+            onBlur={()=>checkField('stock','incorrectStock',isNonEmptyString)}
     
          
             />

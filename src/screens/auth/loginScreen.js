@@ -9,6 +9,7 @@ import { NAVIGATION_TO_FORGOTPASSWORD, NAVIGATION_TO_SIGNUP_SCREEN } from '../..
 import { saveseller } from '../../utils/storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../constants/matcher';
+import { RNToasty } from 'react-native-toasty';
 
 const loginScreen = ({ navigation }) => {
     const [offline, setoffline] = useState(false)
@@ -73,29 +74,29 @@ const loginScreen = ({ navigation }) => {
                             //Showing response message coming from server 
                             console.log(JSON.stringify(responseJson));
                             saveseller(JSON.stringify(responseJson.data.id))
+                            AsyncStorage.setItem('data',JSON.stringify(responseJson.data))
                             AsyncStorage.setItem('user', JSON.stringify(datatoSend))
+                           
                             AsyncStorage.setItem('email', form.email)
                             AsyncStorage.setItem('password', form.password)
                             navigation.replace('drawerNavigationRoutes')
                         }
                         else {
                             setIndicator(false)
-                            alert(responseJson.Message)
+                            RNToasty.Error({
+                                title:responseJson.Message,
+                                position:'center'
+                            })
+                           
+                           
                         }
                     })
                     .catch((error) => {
                     setIndicator(false)
-                    if (Platform.OS !== 'ios') {
-                        ToastAndroid.showWithGravity(
-                            error.toString(),
-                            ToastAndroid.SHORT, //can be SHORT, LONG
-                            ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                        );
-                    } 
-                    else 
-                    {
-                        alert(error.toString())
-                    }
+                    RNToasty.Error({
+                        title:'Something went wrong',
+                        position:'center'
+                    })
                     console.warn(error);
                 });
         } 

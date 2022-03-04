@@ -212,6 +212,7 @@ const EditProduct =({navigation,route})=>{
 
 
     const onChange = (item)=>{
+      setSearch('')
       setModalVisible(false)
       if(item.categoryName){
           setValues(prev=>({
@@ -257,6 +258,7 @@ const EditProduct =({navigation,route})=>{
   
     }
     const onChangeC=(item)=>{
+      setSearch('')
       setModalVisible2(false)
         if(item.countryName){
           setValues(prev=>({

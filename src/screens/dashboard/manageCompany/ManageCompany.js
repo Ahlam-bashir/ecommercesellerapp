@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-community/async-storage'
 import { BASE_URL } from '../../../constants/matcher'
 import Country from '../../../constants/data/country.json'
 import {encode} from 'base-64'
+import { RNToasty } from 'react-native-toasty'
 
 const ManageCompany =({navigation})=>{
     const [modalVisible,setModalVisible] =useState(false)
@@ -231,6 +232,7 @@ const ManageCompany =({navigation})=>{
   
     }
      const onChange = (item)=>{
+       setSearch('')
         console.log(item)       
         setModalVisible(false)
         if(item.countryName)
@@ -287,7 +289,11 @@ const ManageCompany =({navigation})=>{
             return
           }
           if(form.singleFile.uri===''||form.singleFile.uri===undefined||form.singleFile.uri===null){
-              alert('upload liscense file')
+            RNToasty.Warn({
+              title:'upload liscense file',
+              position:'center'
+            })
+             
               return
           }
            
@@ -337,17 +343,11 @@ const ManageCompany =({navigation})=>{
                 Object.entries(responseJson.ModelState).forEach(([key, value]) => {
                   console.log(`${key}: ${value}`)
                   if(Object.entries(value).length!==0){
-                    if(Platform.OS!=='ios'){
-                      ToastAndroid.showWithGravity(
-                        value.toString()  + ' ' +   'at'  + ' ' +   key,
-                      ToastAndroid.SHORT, //can be SHORT, LONG
-                      ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                    );
-                  }
-                    else{
-                      alert( value.toString()  + ' ' +   'at'  + ' ' +   key,
-                      )
-                    }
+                    RNToasty.Error({
+                      title: value.toString()  + ' ' +   'at'  + ' ' +   key,
+                      position:'center'
+                    })
+                    
                   }
                  
               
@@ -356,7 +356,11 @@ const ManageCompany =({navigation})=>{
                //navigation.replace(NAVIGATION_TO_LOGIN_SCREEN)
                }
                else {
-                alert(responseJson.Message)
+                 RNToasty.Success({
+                   title:responseJson.Message,
+                   position:'center'
+                 })
+              
                }    
               })
               .catch((error) => {

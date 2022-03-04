@@ -92,6 +92,7 @@ const dashboardData=async ()=>{
 
  return(
   <ScrollView
+  showsVerticalScrollIndicator={false}
    nestedScrollEnabled={true} 
    style={{flex:1,}}
   // refreshControl={()=>dashboardData()}

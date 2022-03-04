@@ -9,6 +9,7 @@ import { DRAWER_NAVIGATION_ROUTES } from '../../navigation/routes';
 import { BASE_URL } from '../../constants/matcher';
 import AsyncStorage from '@react-native-community/async-storage'
 import {encode} from 'base-64'
+import { RNToasty } from 'react-native-toasty';
 
 
 const ReplaceImages = ({navigation,route}) =>{
@@ -135,16 +136,16 @@ const ReplaceImages = ({navigation,route}) =>{
           console.log(response);
     
           if(response.didCancel){
-            alert('User Cancelled camerapicker')
+          //  alert('User Cancelled camerapicker')
             return
           }else if(response.errorCode== 'camera_unavailable'){
-            alert('Camera not available on this device')
+           // alert('Camera not available on this device')
             return
           }else if(response.errorCode=='permission'){
-            alert('permission not satisfied')
+           // alert('permission not satisfied')
             return
           }else if(response.errorCode=='others'){
-            alert(response.errorMessage)
+          //  alert(response.errorMessage)
             return
           }
           console.log('base64 -> ', response.base64);
@@ -227,16 +228,11 @@ const ReplaceImages = ({navigation,route}) =>{
         console.log('path'+path)
  
            if(path===undefined){
-             if(Platform.OS!=='ios'){
-              ToastAndroid.showWithGravity(
-                'No Image found',
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-              );
-            
-             }else{
-               alert('No Image found')
-             }
+             RNToasty.Error({
+               title:'No Image found',
+               position:'center'
+             })
+             
              return
 
            }
@@ -298,14 +294,22 @@ const ReplaceImages = ({navigation,route}) =>{
                   setLoading(false)
                      if(responseJson.isUploaded===true)
                    { console.log(responseJson)
-                     alert(responseJson.message)
+                    RNToasty.Success({
+                      title:responseJson.message,
+                      position:'center'
+                    })
+                    
                        //setDisableImages(true)
           
           
                     }else if(responseJson.isUploaded===false){
                       setLoading(false)
                       console.log(responseJson)
-                      alert(responseJson.message)
+                     
+                      RNToasty.Error({
+                        title:responseJson.message,
+                        position:'center'
+                      })
                        setDisableImages(true)
       
                     }
@@ -316,11 +320,11 @@ const ReplaceImages = ({navigation,route}) =>{
                         
                          .catch((error) => {
                            setLoading(false)
-                           ToastAndroid.showWithGravity(
-                            error.toString(),
-                            ToastAndroid.SHORT, //can be SHORT, LONG
-                            ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                          );
+                           RNToasty.Error({
+                             title:'Something went wrong',
+                             position:'center'
+                           })
+                           
                        
                           //display error message
                              console.warn(error);
@@ -337,11 +341,11 @@ const ReplaceImages = ({navigation,route}) =>{
       const uploadMainImage =()=>{
         console.log('mainImage')
         if(Object.keys(image).length===0){
-          ToastAndroid.showWithGravity(
-            ' Select Image',
-            ToastAndroid.SHORT, //can be SHORT, LONG
-            ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-          );
+          RNToasty.Warn({
+            title: 'Select Image',
+            position:'center'
+          })
+         
            return
 
          }
@@ -377,14 +381,22 @@ const ReplaceImages = ({navigation,route}) =>{
               setLoading(false)
                  if(responseJson.isUploaded===true)
                { console.log(responseJson)
-                 alert(responseJson.message)
+                RNToasty.Success({
+                  title:responseJson.message,
+                  position:'center'
+                })
+                
                    //setDisableImages(true)
       
       
                 }else if(responseJson.isUploaded===false){
                   setLoading(false)
                   console.log(responseJson)
-                  alert(responseJson.message)
+                  RNToasty.Error({
+                    title:responseJson.message,
+                    position:'center'
+                  })
+                 
                    setDisableImages(true)
 
                 }
@@ -420,11 +432,12 @@ const ReplaceImages = ({navigation,route}) =>{
      const deleteImage=(path)=>{
        console.log(path+'path')
          if(path===undefined || path ===null){
-          ToastAndroid.showWithGravity(
-            'No sub image found',
-             ToastAndroid.SHORT, //can be SHORT, LONG
-             ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-           );
+           RNToasty.Warn({
+             title:'No sub image found',
+             position:'center'
+
+           },3000)
+          
         
           return
 
@@ -466,11 +479,10 @@ const ReplaceImages = ({navigation,route}) =>{
                   setLoading(false)
                            //Showing response message coming from server 
                         //  navigation.navigate('ManageProducts')
-                        ToastAndroid.showWithGravity(
-                         responseJson.message,
-                          ToastAndroid.SHORT, //can be SHORT, LONG
-                          ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                        );
+                        RNToasty.Success({
+                          title: responseJson.message,position:'center'
+                        })
+                       
                           setflag(true)
                          console.log(responseJson);
                         })
@@ -501,11 +513,11 @@ const ReplaceImages = ({navigation,route}) =>{
 const replace =()=>{
   console.log('hello')
     if(file.photo1.uri!==list[0] || file.photo2.uri!==list[1] || file.photo3!==list[2] || file.photo4.uri!==list[3] ||file.photo5.uri!==list[4]){
-      ToastAndroid.showWithGravity(
-        'Images replaced sucessfully',
-        ToastAndroid.SHORT, //can be SHORT, LONG
-        ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-      );
+     RNToasty.Success({
+       title: 'Images replaced sucessfully',
+       position:'center'
+     })
+     
       navigation.navigate('ManageProducts')
          
     }

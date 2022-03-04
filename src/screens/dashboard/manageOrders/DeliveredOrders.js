@@ -88,12 +88,14 @@ const DeliveredOrders = ({navigation})=>{
       }
       const searchData=(text)=>{
         const newData= arrayholder.filter(item=>{
-          const itemData= item.Products.name.toUpperCase();
-          const textData= text.toUpperCase()
-          return itemData.indexOf(textData)>-1
-        })
-        setDeliverOrder(newData)
-        setSearchText(text)
+          // const itemData= item.Products.name.toUpperCase();
+          const itemData=item.Orders.id.toString().toUpperCase()
+           const textData= text.toUpperCase();
+           return itemData.indexOf(textData)>-1
+         })
+         setDeliverOrder(newData)
+         setSearchText(text)
+       
 
       }
       const onRefresh = () => {
@@ -113,7 +115,7 @@ const DeliveredOrders = ({navigation})=>{
          <View style={{width:'100%',height:50,backgroundColor:colors.colors.gray200,bottom:6,flexDirection:'row',alignItems:'center',borderRadius: 8,}}>
                   <Icon name='search' size={20} color={colors.colors.gray500} style={{padding: 6,}}/>
                   <TextInput  
-                  placeholder='Search here...'
+                  placeholder='Search by OrderId'
                   value={searchText}
                   style={{borderWidth:0,padding:6,width:'100%'}}
                   onChangeText={(text)=>searchData(text)}

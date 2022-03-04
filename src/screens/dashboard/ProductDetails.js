@@ -19,6 +19,7 @@ import {
 } from 'react-native-popup-menu';
 import UploadImageModal from '../../common/picker/UploadImageModal'
 import VariationUpdateModal from '../../common/picker/VariationUpdateModal'
+import ImageZoom from 'react-native-image-pan-zoom';
 
 
 const ProductDetails=({navigation,route})=>{
@@ -223,16 +224,30 @@ const ProductDetails=({navigation,route})=>{
          />
          <Loader loading={loading}/>
         
-        <View style={styles.imageContainer}>
-           <ImageSlider
+        <View style={styles.imaigeContainer}>
+       
+
+       <ImageSlider
             loopBothSides
-            autoPlayWithInterval={3000}
+            autoPlayWithInterval={6000}
             images={images}
             customSlide={({ index, item, style, width }) => (
                 
                 // It's important to put style here because it's got offset inside
                 <View key={index} style={[style, styles.customSlide]}>
-                  <Image source={{ uri: item }} style={styles.customImage} />
+                   <ImageZoom cropWidth={DIMENS.common.WINDOW_WIDTH}
+                       cropHeight={DIMENS.common.WINDOW_HEIGHT*1/2}
+                       imageWidth={DIMENS.common.WINDOW_WIDTH}
+                       pinchToZoom={true}
+                       imageHeight={200}>
+                           <Image source={{ uri: item }} style={styles.customImage} />
+                        
+                  
+                       
+              </ImageZoom>
+                 
+                
+                 
                 </View>
                 
               )}
@@ -246,15 +261,15 @@ const ProductDetails=({navigation,route})=>{
                         onPress={() => move(index)}
                         style={styles.button}
                       >
-                        <TextView style={position === index && styles.buttonSelected}>
-                          {index + 1}
-                        </TextView>
+                       
+                        <View style={position === index ?styles.buttonSelected:{...styles.buttonSelected,backgroundColor:colors.colors.gray200}}/>
+                        
                       </TouchableHighlight>
                     );
                   })}
                 </View>
               )}
-           />
+                />
             <View style={{alignSelf:'flex-end',position:'absolute',bottom:8,right:8}}>
           <TouchableOpacity onPress={()=>{navigation.navigate(NAVIGATION_TO_REPLACEIMAGES,{'seller':sellerId,'product':id})
             }}>
@@ -411,17 +426,23 @@ const styles= StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
       },  buttonSelected: {
-        opacity: 1,
-        color: 'red',
+        //opacity: 1,
+     //   color: 'red',
+        height:6,
+        width:20,
+        borderRadius:30,
+        backgroundColor:colors.colors.primary
       },
       customSlide: {
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor:colors.colors.white
+      //  width:'100%'
+       // alignItems: 'center',
+        //justifyContent: 'center',
       },
       customImage: {
         width: '100%',
         height: 300,
-        resizeMode:'cover'
+        resizeMode:'contain'
       },
       text:{
         fontSize:12,

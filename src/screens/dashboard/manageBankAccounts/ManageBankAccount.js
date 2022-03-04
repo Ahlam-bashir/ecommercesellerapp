@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-community/async-storage'
 import { BASE_URL } from '../../../constants/matcher'
 import { encode } from 'base-64'
 import Country from '../../../constants/data/country.json'
+import { RNToasty } from 'react-native-toasty'
 const ManageBankAccount =({navigation})=>{
   const [modalVisible,setModalVisible] = useState(false)
   const [countryModal,setCountryModal]= useState(false)
@@ -83,15 +84,11 @@ const ManageBankAccount =({navigation})=>{
               })
               .catch((error) => {
                 setLoading(false)
-                if(Platform.OS!=='ios'){
-                  ToastAndroid.showWithGravity(
-                    error.toString(),
-                    ToastAndroid.SHORT, //can be SHORT, LONG
-                    ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                  );
-                }else{
-                  alert(error.toString())
-                }
+                RNToasty.Error({
+                  title:'something went wrong',
+                  position:'center'
+                })
+               
            
               //display error message
                console.warn(error);
@@ -135,11 +132,19 @@ const checkField=(fieldKey,fieldErrorKey,fieldValidater)=>{
       return
     }
     if(form.countryId==''){
-      alert('select country')
+      RNToasty.Warn({
+        title:'select country',
+        position:'center'
+      })
+     
       return
     }
     if(form.AccountNumber!==form.ConfirmAccountNumber){
-      alert('account number and confirm Account number does not match')
+      RNToasty.Warn({
+        title:'account number and confirm Account number does not match',
+        position:'center'
+      },3000)
+     // alert('account number and confirm Account number does not match')
       return
     }
     
@@ -185,18 +190,11 @@ const checkField=(fieldKey,fieldErrorKey,fieldValidater)=>{
           Object.entries(responseJson.ModelState).forEach(([key, value]) => {
             console.log(`${key}: ${value}`)
             if(Object.entries(value).length!==0){
-              if(Platform.OS!=='ios'){
-                ToastAndroid.showWithGravity(
-                  value.toString()  + ' ' +   'at'  + ' ' +   key,
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-              );
-            }
-              else{
-                alert( value.toString()  + ' ' +   'at'  + ' ' +   key,
-                )
-                
-              }
+              RNToasty.Error({
+                title: value.toString()  + ' ' +   'at'  + ' ' +   key,
+                position:'center'
+              })
+              
             }
            
         
@@ -205,7 +203,11 @@ const checkField=(fieldKey,fieldErrorKey,fieldValidater)=>{
          //navigation.replace(NAVIGATION_TO_LOGIN_SCREEN)
          }
          else {
-          alert(responseJson.Message)
+           RNToasty.Success({
+             title:responseJson.Message,
+             position:'center'
+           })
+         
          }    
         })
         .catch((error) => {

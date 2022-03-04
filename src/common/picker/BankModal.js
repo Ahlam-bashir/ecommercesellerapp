@@ -7,6 +7,7 @@ import { DIMENS } from '../../constants'
 import AsyncStorage from '@react-native-community/async-storage'
 import { BASE_URL } from '../../constants/matcher'
 import { encode } from 'base-64'
+import { RNToasty } from 'react-native-toasty'
 
 
 const BankModal =(props) =>{
@@ -162,17 +163,11 @@ const BankModal =(props) =>{
                 Object.entries(responseJson.ModelState).forEach(([key, value]) => {
                   console.log(`${key}: ${value}`)
                   if(Object.entries(value).length!==0){
-                    if(Platform.OS!=='ios'){
-                      ToastAndroid.showWithGravity(
-                        value.toString()  + ' ' +   'at'  + ' ' +   key,
-                      ToastAndroid.SHORT, //can be SHORT, LONG
-                      ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-                    );
-                  }
-                    else{
-                      alert( value.toString()  + ' ' +   'at'  + ' ' +   key,
-                      )
-                    }
+                    RNToasty.Error({
+                      title: value.toString()  + ' ' +   'at'  + ' ' +   key,
+                      position:'center'
+                    })
+                   
                   }
                  
               
@@ -181,7 +176,11 @@ const BankModal =(props) =>{
                //navigation.replace(NAVIGATION_TO_LOGIN_SCREEN)
                }
                else {
-                alert(responseJson.message)
+                 RNToasty.Success({
+                   title:responseJson.message,
+                   position:'center'
+                 })
+               
                }    
               })
               .catch((error) => {

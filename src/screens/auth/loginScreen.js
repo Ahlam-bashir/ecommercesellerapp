@@ -2,20 +2,23 @@ import React, { useState, useContext, useEffect } from 'react'
 import { View, StyleSheet, Image, TouchableOpacity, Keyboard, ScrollView, ToastAndroid, Platform, KeyboardAvoidingView } from 'react-native';
 import { DIMENS, TYPOGRAPHY } from '../../constants'
 import NetInfo from '@react-native-community/netinfo'
-import { isNonEmptyString, isEmailValid, isPhoneNumberValid, isNumber } from '../../utils'
+import { isNonEmptyString, isEmailValid, isPhoneNumberValid, isNumber, isPasswordValid } from '../../utils'
 import { colors } from '../../theme'
-import { Text, InputText, Loader } from '../../common'
+import { Text, InputText, Loader,Icon } from '../../common'
 import { NAVIGATION_TO_FORGOTPASSWORD, NAVIGATION_TO_SIGNUP_SCREEN } from '../../navigation/routes';
 import { saveseller } from '../../utils/storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../constants/matcher';
 import { RNToasty } from 'react-native-toasty';
 
+
 const loginScreen = ({ navigation }) => {
     const [offline, setoffline] = useState(false)
+    const [hidden,setHidden]=useState(true)
     const [form, setValues] = useState({
         email: '',
         incorrectEmail: false,
+        emailError:'',
         password: '',
         incorrectPassword: false,
     })
@@ -34,21 +37,41 @@ const loginScreen = ({ navigation }) => {
     }
     useEffect(() => {
         NetInfo.addEventListener(state => {
-            console.log('Connection type', state.type);
-            console.log('Is connected?', state.isConnected);
-            console.log(state.isInternetReachable)
+          
+          
             setoffline(state.isConnected)
         });
     }, [offline])
     const checkvalidation = () => {
         let isValid = true
-        isValid = isValid && checkField('email', 'incorrectEmail', isEmailValid)
+        isValid = isValid && checkField('email', 'incorrectEmail',isNonEmptyString)
+       
         isValid = isValid && checkField('password', 'incorrectPassword', isNonEmptyString)
         return isValid
 
     }
     const login = () => {
         Keyboard.dismiss()
+        if(!isNonEmptyString(form.email)){
+            setValues(prevState=>({
+                ...prevState,
+                emailError:'Mandatory field',
+               
+                incorrectEmail:true,      
+            }))
+
+
+        }else if(!isNonEmptyString(form.email) || !isEmailValid(form.email)){
+            setValues(prevState=>({
+                ...prevState,
+                emailError:'Email should be valid',
+               
+                incorrectEmail:true,      
+            }))
+            return
+
+
+        }
         if (!checkvalidation()) {
             return
         }
@@ -102,11 +125,11 @@ const loginScreen = ({ navigation }) => {
         } 
         else {
             setIndicator(false)
-            ToastAndroid.showWithGravity(
-                'Make sure you have internet connection',
-                ToastAndroid.SHORT, //can be SHORT, LONG
-                ToastAndroid.BOTTOM, //can be TOP, BOTTON, CENTER
-            );
+            RNToasty.Show({
+                title:'Make sure you have internet connection',
+                position:'center'
+            })
+           
         }
     }
 
@@ -130,20 +153,45 @@ const loginScreen = ({ navigation }) => {
                 labelStyle={''}
                 autoCorrect={false}
                 containerStyle={styles.containerStyle}
-                errorMessage={form.incorrectEmail ?'Email should not be blank':''}    
+                errorMessage={form.incorrectEmail ?form.emailError:''}    
                 onChangeText={value=>setValues(prevState=>({
                     ...prevState,
                     email:value.trim(),
                     incorrectEmail:false,      
                 }))}
-                onBlur={()=>checkField('email','incorrectEmail',isEmailValid)} 
+                onBlur={()=>{
+                    if(!isNonEmptyString(form.email)){
+                        setValues(prevState=>({
+                            ...prevState,
+                            emailError:'Mandatory field',
+                           
+                            incorrectEmail:true,      
+                        }))
+
+
+                    }else if(!isNonEmptyString(form.email) || !isEmailValid(form.email)){
+                        setValues(prevState=>({
+                            ...prevState,
+                            emailError:'Email should be valid',
+                           
+                            incorrectEmail:true,      
+                        }))
+
+
+                    }
+                   // checkField('email','incorrectEmail',isEmailValid)
+                }
+                } 
                 underlineColorAndroid = {colors.colors.transparent}
             />
+             
             <InputText
                 label='Password'
                 labelStyle={''}
+                secureTextEntry={hidden}       
                 autoCorrect={false}
-                secureTextEntry={true}
+                contextMenuHidden={true}
+              
                 containerStyle={styles.containerStyle} 
                  errorMessage={form.incorrectPassword ?'Password should not be blank':''}
                 onChangeText={value=>setValues(prevState=>({
@@ -151,9 +199,24 @@ const loginScreen = ({ navigation }) => {
                     password:value.trim(),
                     incorrectPassword:false,      
                 }))}
-                onBlur={()=>checkField('password','incorrectPassword',isNonEmptyString)}
+
+                onBlur={()=>{           
+                    checkField('password','incorrectPassword',isNonEmptyString)
+                }}
                 underlineColorAndroid = {colors.colors.transparent}
             />
+              <TouchableOpacity  
+               onPress={()=>hidden?setHidden(false):setHidden(true)} 
+               style={{bottom:42,alignSelf:'flex-end', zIndex:1,position:'absolute',right:10}}>
+          <Icon
+        
+            type='feather'
+            name={hidden?'eye-off':'eye'}
+            color={colors.colors.primary}
+           
+            />
+            </TouchableOpacity>
+           
         </View>   
         <TouchableOpacity  style={{width:'100%',height:40,backgroundColor:colors.colors.primary,marginTop: 12,alignItems:'center',justifyContent:'center',borderRadius:7}} onPress={login}>
         <Text type='subheading' style={{color:colors.colors.white ,padding: 5,alignSelf: 'center',}}>Login</Text>
@@ -248,7 +311,7 @@ const styles = StyleSheet.create({
     },
     containerStyle: {
         //flex:1,
-        backgroundColor: colors.colors.white,
+        backgroundColor: colors.colors.transparent,
         height: 40,
         borderRadius: 4,
        // top:12,
@@ -258,11 +321,11 @@ const styles = StyleSheet.create({
           width: 0,
           height: 1,
         },
-        shadowRadius: 1,
+        shadowRadius: 0.5,
         shadowOpacity: 1.0,
         borderWidth:1,
         margin: 2,
-        elevation:2,
+        elevation:1,
         borderColor:colors.colors.primaryLight,
         position:'relative',
         zIndex:1,

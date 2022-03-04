@@ -344,6 +344,8 @@ const registerScreen = ({navigation}) =>{
       setLoading(false)
              console.log(responseJson)
          if(responseJson.status){
+
+
            alert(responseJson.status)
            navigation.replace(NAVIGATION_TO_OTP_VERIFICATION,{'userid':responseJson.data.id})
 
@@ -542,7 +544,9 @@ const searchFilterFunction = (text) => {
   return(
       <SafeAreaView style={{flex:1}}>
       <View style={styles.container}>
+       
         <Loader loading={loading}/>
+      
                <SubscriptionModal
                  visible={subModalVisible}
                  item={subscriptionData}
@@ -550,7 +554,7 @@ const searchFilterFunction = (text) => {
                  onClose={()=>setSubmodalvisible(false)}
                  
              />
-               <View style={{flexDirection:'row',alignItems:'center',width:'100%'}}>
+               <View style={{flexDirection:'row',alignItems:'center',width:'100%',justifyContent:'center',paddingLeft:12,paddingRight:12}}>
             <Icon
               name="arrowleft"
               color={colors.colors.primary}
@@ -1007,8 +1011,9 @@ centerView:{
 
 },
 headerText:{
-  fontSize:22,
-   alignSelf:'center',
+  fontSize:16,
+  // alignSelf:'center',
+  
    padding: 10,
    marginBottom:10,
    color:colors.colors.primary,

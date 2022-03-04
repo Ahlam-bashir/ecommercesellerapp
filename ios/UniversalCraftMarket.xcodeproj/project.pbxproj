@@ -545,7 +545,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 9B4VP8M9P3;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/UniversalCraftMarketTests/Info.plist";
@@ -558,11 +558,11 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.universalcraftmarket.seller;
 				PRODUCT_NAME = UniversalCraftMarket;
-				PROVISIONING_PROFILE_SPECIFIER = "Universal Craft Market Seller";
+				PROVISIONING_PROFILE_SPECIFIER = UCM_Seller;
 				SWIFT_OBJC_BRIDGING_HEADER = "UniversalCraftMarket-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -579,7 +579,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 9B4VP8M9P3;
 				INFOPLIST_FILE = "$(SRCROOT)/UniversalCraftMarketTests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
@@ -591,11 +591,11 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.universalcraftmarket.seller;
 				PRODUCT_NAME = UniversalCraftMarket;
-				PROVISIONING_PROFILE_SPECIFIER = "UCM Seller";
+				PROVISIONING_PROFILE_SPECIFIER = UCM_Seller;
 				SWIFT_OBJC_BRIDGING_HEADER = "UniversalCraftMarket-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -8,6 +8,8 @@ import { loadSeller } from '../../utils/storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { BASE_URL } from '../../../constants/matcher';
 import Country from '../../../constants/data/country.json'
+import ImageZoom from 'react-native-image-pan-zoom';
+
 
 const OrderDetails = ({navigation,route})=>{
       const orderId=route.params.Id
@@ -148,7 +150,12 @@ const OrderDetails = ({navigation,route})=>{
            <Loader loading={loading}/>
            <View style={styles.main}>
          <View style={styles.orderContainer}>
-        <Image  source={{uri:image}} style={{width:DIMENS.common.WINDOW_WIDTH,resizeMode:'cover',height:240}}/>
+         <ImageZoom cropWidth={DIMENS.common.WINDOW_WIDTH}
+                       cropHeight={DIMENS.common.WINDOW_HEIGHT*1/2}
+                       imageWidth={DIMENS.common.WINDOW_WIDTH}
+                       imageHeight={200}>
+        <Image  source={{uri:image}} style={{width:DIMENS.common.WINDOW_WIDTH,resizeMode:'contain',height:240}}/>
+        </ImageZoom>
              <View style={{flexDirection:'column',marginTop:8,padding:6,backgroundColor:colors.colors.white}}>
              <Text type='subheading' style={{color:colors.colors.primary}}>Order Details</Text>
              <View style={styles.divider}/>

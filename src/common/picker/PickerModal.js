@@ -35,7 +35,7 @@ const PickerModal = (props) =>{
             <Icon  name='clear' size={25} color={colors.colors.black}        />
             </TouchableOpacity>            
             </View>
-            <Loader  loading={props.loading}/>
+          
             <KeyboardAvoidingView
               behavior={Platform.OS === "ios" ? "padding" : null}
               keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
